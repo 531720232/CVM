@@ -149,7 +149,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     return 0;
                 }
 
-                return _containingType.ContainingAotModule.GetMarshallingType(_handle);
+             
+                return UnmanagedType.LPStr;//_containingType.ContainingAotModule.GetMarshallingType(_handle);
             }
         }
 
@@ -162,7 +163,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     return default(ImmutableArray<byte>);
                 }
 
-                return _containingType.ContainingAotModule.GetMarshallingDescriptor(_handle);
+                return default;
+           //     return _containingType.ContainingAotModule.GetMarshallingDescriptor(_handle);
             }
         }
 
@@ -178,6 +180,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             get
             {
+           
                 return _handle;
             }
         }
@@ -259,7 +262,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
 
-        void
+        
 
         internal override TypeSymbolWithAnnotations GetFieldType(ConsList<FieldSymbol> fieldsBeingBound)
         {
@@ -431,21 +434,21 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (_lazyCustomAttributes.IsDefault)
             {
-                var containingPEModuleSymbol = (AotModuleSymbol)this.ContainingModule;
+                var containingAotModuleSymbol = (AotModuleSymbol)this.ContainingModule;
 
                 if (FilterOutDecimalConstantAttribute())
                 {
                     // filter out DecimalConstantAttribute
-                    var attributes = containingPEModuleSymbol.GetCustomAttributesForToken(
-                        _handle,
-                        out _,
-                        AttributeDescription.DecimalConstantAttribute);
+                    //var attributes = containingAotModuleSymbol.GetCustomAttributesForToken(
+                    //    _handle,
+                    //    out _,
+                    //    AttributeDescription.DecimalConstantAttribute);
 
-                    ImmutableInterlocked.InterlockedInitialize(ref _lazyCustomAttributes, attributes);
+                    //ImmutableInterlocked.InterlockedInitialize(ref _lazyCustomAttributes, attributes);
                 }
                 else
                 {
-                    containingPEModuleSymbol.LoadCustomAttributes(_handle, ref _lazyCustomAttributes);
+              //  ..    containingAotModuleSymbol.LoadCustomAttributes(_handle, ref _lazyCustomAttributes);
                 }
             }
             return _lazyCustomAttributes;
@@ -471,8 +474,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
 
                 var containingAotModuleSymbol = _containingType.ContainingAotModule;
-                yield return new AotAttributeData(containingAotModuleSymbol,
-                                          containingAotModuleSymbol.FindLastTargetAttribute(_handle, AttributeDescription.DecimalConstantAttribute).Handle);
+                //yield return new AotAttributeData(containingAotModuleSymbol,
+                //                          containingAotModuleSymbol.FindLastTargetAttribute(_handle, AttributeDescription.DecimalConstantAttribute).Handle);
             }
         }
 

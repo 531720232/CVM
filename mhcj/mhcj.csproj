@@ -153,7 +153,7 @@
     <Compile Include="Core\SymbolDisplay\SymbolDisplayPartKind.cs" />
     <Compile Include="Core\SymbolDisplay\SymbolDisplayPropertyStyle.cs" />
     <Compile Include="Core\SymbolDisplay\SymbolDisplayTypeQualificationStyle.cs" />
-    <Compile Include="Core\Symbols\cS\Source\AttributeLocation.cs" />
+    <Compile Include="Core\Symbols\AttributeLocation.cs" />
     <Compile Include="Core\Symbols\RefKind.cs" />
     <Compile Include="Core\Symbols\WellKnownMemberNames.cs" />
     <Compile Include="Core\SynthesizedLocalKind.cs" />
@@ -923,6 +923,8 @@
     <Compile Include="CVM\PEWriter\Units.cs" />
     <Compile Include="CVM\PEWriter\UsedNamespaceOrType.cs" />
     <Compile Include="CVM\SignatureTypeCode.cs" />
+    <Compile Include="CVM\Symbols\Aot\AotAttributeData.cs" />
+    <Compile Include="CVM\Symbols\Aot\AotEventSymbol.cs" />
     <Compile Include="CVM\Symbols\Aot\AotNamedTypeSymbolGeneric.cs" />
     <Compile Include="CVM\Symbols\Aot\AotNamedTypeSymbolNonGeneric.cs" />
     <Compile Include="CVM\Symbols\Aot\AotNestedNamespaceSymbol.cs" />
@@ -1765,7 +1767,6 @@
     <None Include="Util\PooledObjects\PooledStringBuilder.cs.meta" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Core\Pb\De\" />
     <Folder Include="CVM\AstNode\Exp\" />
     <Folder Include="CVM\DiagnosticAnalyzer\" />
     <Folder Include="CVM\Symbols\CC\Metadata\" />

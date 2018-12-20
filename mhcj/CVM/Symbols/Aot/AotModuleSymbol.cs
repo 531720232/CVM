@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override Symbol ContainingSymbol => _assemblySymbol;
 
-        public override ImmutableArray<Location> Locations => throw new NotImplementedException();
+        public override ImmutableArray<Location> Locations => new ImmutableArray<Location>(new Location[] { new AotLocation()});
 
         internal override int Ordinal => 0;
 

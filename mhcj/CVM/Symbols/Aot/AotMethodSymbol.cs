@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override bool IsSealed => HasFlag(MethodAttributes.Final)&&!HasFlag(MethodAttributes.Virtual)&&!HasFlag(MethodAttributes.Abstract);
 
-        public override bool IsExtern => HasFlag(MethodAttributes.UnmanagedExport);
+        public override bool IsExtern => HasFlag(MethodAttributes.PinvokeImpl);
 
         internal override bool HasSpecialName =>me.IsSpecialName
             ;
