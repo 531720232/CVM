@@ -101,8 +101,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             ns = ComputeNamespaceNameCollection();
 
             _globalNamespace = new AotGlobalNamespaceSymbol(this);
-  //          ((AotGlobalNamespaceSymbol)_globalNamespace).AutoBind();
             _assemblySymbol = ad;
+            ((AotGlobalNamespaceSymbol)_globalNamespace).AutoBind();
 
             //var ty = typeof(object).Assembly;
             //foreach(var t in ty.GetTypes())

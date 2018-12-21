@@ -26,11 +26,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             this.arity = arity;
         }
 
-        public override int Arity => throw new NotImplementedException();
+        public override int Arity => arity;
 
         public override ImmutableArray<TypeParameterSymbol> TypeParameters => throw new NotImplementedException();
 
-        public override NamedTypeSymbol ConstructedFrom => throw new NotImplementedException();
 
         public override bool MightContainExtensionMethods => throw new NotImplementedException();
 

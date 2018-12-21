@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,6 +16,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     {
         MethodBase me;
         MethodKind _kind;
+        private AotModuleSymbol module;
+        private AotNamedTypeSymbol aotNamedTypeSymbol;
+        private MethodInfo methodHandle;
         private readonly AotNamedTypeSymbol _containingType;
 
         internal AotMethodSymbol(MethodBase m
@@ -23,10 +27,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             me = m;
            
         }
+
+        public AotMethodSymbol(AotModuleSymbol module, AotNamedTypeSymbol aotNamedTypeSymbol, MethodInfo methodHandle)
+        {
+            this.module = module;
+            this.aotNamedTypeSymbol = aotNamedTypeSymbol;
+            //     this.methodHandle = methodHandle;
+            me = methodHandle;
+        }
+       
+
         void SetMethodKind()
         {
         
-            MethodKind k;
+            MethodKind k=MethodKind.Ordinary;
           if(me is ConstructorInfo)
             {
                 if (me.IsStatic)
@@ -39,10 +53,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     k = MethodKind.Constructor;
                 }
                 }
-         
+            _flag = k;
         }
 
-        public override MethodKind MethodKind => throw new NotImplementedException();
+        MethodKind _flag;
+        public override MethodKind MethodKind => _flag;
 
         public override int Arity => me.GetParameters().Length;
         public override bool IsExtensionMethod => false;
@@ -147,7 +162,33 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return null;
 
         }
+        private Symbol _associatedPropertyOrEventOpt;
 
+        internal bool SetAssociatedProperty(AotPropertySymbol propertySymbol, MethodKind methodKind)
+        {
+            Debug.Assert((methodKind == MethodKind.PropertyGet) || (methodKind == MethodKind.PropertySet));
+            return this.SetAssociatedPropertyOrEvent(propertySymbol, methodKind);
+        }
+        private bool SetAssociatedPropertyOrEvent(Symbol propertyOrEventSymbol, MethodKind methodKind)
+        {
+            if ((object)_associatedPropertyOrEventOpt == null)
+            {
+         //       Debug.Assert(TypeSymbol.Equals(propertyOrEventSymbol.ContainingType, _containingType, TypeCompareKind.ConsiderEverything2));
+
+                // No locking required since SetAssociatedProperty/SetAssociatedEvent will only be called
+                // by the thread that created the method symbol (and will be called before the method
+                // symbol is added to the containing type members and available to other threads).
+                _associatedPropertyOrEventOpt = propertyOrEventSymbol;
+
+                // NOTE: may be overwriting an existing value.
+
+
+                _flag = methodKind;
+                return true;
+            }
+
+            return false;
+        }
         internal override int CalculateLocalSyntaxOffset(int localPosition, SyntaxTree localTree)
         {
             throw new NotImplementedException();
@@ -184,5 +225,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
       
         }
+        internal MethodBase Handle => me;
+        internal MethodInfo Handle1 =>(MethodInfo) me;
+
     }
 }

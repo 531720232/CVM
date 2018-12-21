@@ -932,12 +932,15 @@
     <Compile Include="CVM\Symbols\Aot\AotModuleSymbol.cs" />
     <Compile Include="CVM\Symbols\Aot\AotNamedTypeSymbol.cs" />
     <Compile Include="CVM\Symbols\Aot\AotNamespaceSymbol.cs" />
+    <Compile Include="CVM\Symbols\Aot\AotParameterSymbol.cs" />
+    <Compile Include="CVM\Symbols\Aot\AotPropertySymbol.cs" />
     <Compile Include="CVM\Symbols\Aot\MemberSignatureComparer.cs" />
     <Compile Include="CVM\Symbols\Aot\AotAssemblySymbol.cs" />
     <Compile Include="CVM\Symbols\Aot\MetadataDecoder.cs" />
     <Compile Include="CVM\Symbols\Aot\MetadataDecoder1.cs" />
     <Compile Include="CVM\Symbols\Aot\AotGlobalNamespaceSymbol.cs" />
     <Compile Include="CVM\Symbols\Aot\AotFieldSymbol.cs" />
+    <Compile Include="CVM\Symbols\Aot\ParamInfo.cs" />
     <Compile Include="CVM\Symbols\A\AnonymousTypeMethodBodySynthesizer.cs" />
     <Compile Include="CVM\Symbols\CC\AbstractTypeMap.cs" />
     <Compile Include="CVM\Symbols\CC\AbstractTypeParameterMap.cs" />

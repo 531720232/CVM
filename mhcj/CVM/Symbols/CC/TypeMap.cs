@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         private TypeMap(SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations> mapping)
-            : base(new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>(mapping, (IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer.Instance))
+            : base(new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>(mapping, ReferenceEqualityComparer2.Instance))
         {
             // mapping contents are read-only hereafter
         }
@@ -56,8 +56,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             var substituted = containingType as SubstitutedNamedTypeSymbol;
             return (object)substituted != null ?
-                new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>(substituted.TypeSubstitution.Mapping, (IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer.Instance) :
-                new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>((IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer.Instance);
+                new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>(substituted.TypeSubstitution.Mapping, (IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer2.Instance) :
+                new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>((IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer2.Instance);
         }
 
         internal TypeMap(NamedTypeSymbol containingType, ImmutableArray<TypeParameterSymbol> typeParameters, ImmutableArray<TypeSymbolWithAnnotations> typeArguments)
@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
 
         private static readonly SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations> s_emptyDictionary =
-            new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>((IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer.Instance);
+            new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>((IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer2.Instance);
 
         private TypeMap()
             : base(s_emptyDictionary)
@@ -192,7 +192,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private static SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations> ConstructMapping(ImmutableArray<TypeParameterSymbol> from, ImmutableArray<TypeSymbolWithAnnotations> to)
         {
-            var mapping = new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>((IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer.Instance);
+            var mapping = new SmallDictionary<TypeParameterSymbol, TypeSymbolWithAnnotations>((IEqualityComparer<TypeParameterSymbol>)ReferenceEqualityComparer2.Instance);
 
             Debug.Assert(from.Length == to.Length);
 

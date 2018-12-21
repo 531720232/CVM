@@ -774,7 +774,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 var compilation = this.DeclaringCompilation;
                 Debug.Assert(compilation != null);
-           //     compilation.DeclarationDiagnostics.AddRange(diagnostics);
+                //     compilation.DeclarationDiagnostics.AddRange(diagnostics);
+              
             }
         }
 

@@ -880,7 +880,7 @@ namespace CVM.Collections.Concurrent
                 TValue value;
                 if (!TryGetValue(key, out value))
                 {
-                    ThrowKeyNotFoundException(key);
+                    ThrowKeyNotFoundException(this,key);
                 }
                 return value;
             }
@@ -896,8 +896,9 @@ namespace CVM.Collections.Concurrent
         // as these are uncommonly needed and when inlined are observed to prevent the inlining
         // of important methods like TryGetValue and ContainsKey.
 
-        private static void ThrowKeyNotFoundException(object key)
+        private static void ThrowKeyNotFoundException(object ouw,object key)
         {
+           
             throw new KeyNotFoundException();
         }
 

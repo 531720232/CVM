@@ -12,7 +12,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     /// </summary>
     internal sealed class AotAssemblySymbol : MetadataOrSourceAssemblySymbol
     {
-        internal readonly static AotAssemblySymbol Inst = new AotAssemblySymbol();
+        private static AotAssemblySymbol _inst;
+        internal  static AotAssemblySymbol Inst
+        {
+
+            get
+            {
+                if(_inst==null)
+                {
+                    _inst = new AotAssemblySymbol();
+                }
+                return _inst;
+            }
+        }
+        internal AotModuleSymbol Aot;
         AssemblyIdentity _id;
         private readonly ImmutableArray<ModuleSymbol> _modules;
         ImmutableArray<Location> loc;
@@ -20,9 +33,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             _id = new AssemblyIdentity("CVM_Core", new Version(1, 2, 3, 4),System.Globalization.CultureInfo.CurrentCulture.Name, default, false);
             _modules = ImmutableArray<ModuleSymbol>.Empty;
-            _modules = _modules.Add(new AotModuleSymbol(this));
+            Aot = new AotModuleSymbol(this);
+            _modules = _modules.Add(Aot);
             loc = new ImmutableArray<Location>(new Location[] { new AotLocation() });
 
+      
             SetCorLibrary(this);
         }
 

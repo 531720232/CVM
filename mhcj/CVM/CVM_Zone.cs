@@ -1571,6 +1571,8 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             _scriptClass = new Lazy1<ImplicitNamedTypeSymbol>(BindScriptClass);
            _anonymousTypeManager= new AnonymousTypeManager(this);
+            this.builtInOperators = new BuiltInOperators(this);
+
         }
         private ImplicitNamedTypeSymbol BindScriptClass()
         {
@@ -2597,7 +2599,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 mod.SetReferences(new ModuleReferences<AssemblySymbol>(new ImmutableArray<AssemblyIdentity>(new AssemblyIdentity[] { corLibrary.Identity }), new ImmutableArray<AssemblySymbol>(new AssemblySymbol[] { corLibrary }), adc.ToImmutable()));
 
                 assemblySymbol._modules= assemblySymbol._modules.Add(mod);
-
+              
 
               
                     lock (SymbolCacheAndReferenceManagerStateGuard)

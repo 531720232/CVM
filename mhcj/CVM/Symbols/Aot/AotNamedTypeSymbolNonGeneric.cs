@@ -94,10 +94,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             throw new NotImplementedException();
         }
 
-        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<Symbol> basesBeingResolved)
-        {
-            throw new NotImplementedException();
-        }
+      
 
         internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
         {

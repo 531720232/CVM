@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -39,6 +40,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
 
 
+
+     
         internal AotModuleSymbol ContainingAotModule
         {
             get
@@ -358,7 +361,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                     if (token!=null)
                     {
-                        TypeSymbol decodedType = ((AotModuleSymbol)moduleSymbol).TypeHandleToTypeMap[token];
+
+                        var mw = MetadataTypeName.FromFullName(token.FullName);
+                        TypeSymbol decodedType = ((AotModuleSymbol)moduleSymbol).LookupTopLevelMetadataType(ref mw);
                         //decodedType = DynamicTypeDecoder.TransformType(decodedType, 0, _handle, moduleSymbol);
                         return (NamedTypeSymbol)decodedType;  //return (NamedTypeSymbol)TupleTypeDecoder.DecodeTupleTypesIfApplicable(decodedType,
                         //                                                                      _handle,
@@ -428,6 +433,47 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return declaredInterfaces
                 .SelectAsArray(t => BaseTypeAnalysis.InterfaceDependsOn(t, this) ? CyclicInheritanceError(this, t) : t);
         }
+        internal override ImmutableArray<NamedTypeSymbol> GetDeclaredInterfaces(ConsList<Symbol> basesBeingResolved)
+        {
+            if (_lazyDeclaredInterfaces.IsDefault)
+            {
+                ImmutableInterlocked.InterlockedCompareExchange(ref _lazyDeclaredInterfaces, MakeDeclaredInterfaces(), default(ImmutableArray<NamedTypeSymbol>));
+            }
+
+            return _lazyDeclaredInterfaces;
+        }
+        private ImmutableArray<NamedTypeSymbol> MakeDeclaredInterfaces()
+        {
+            try
+            {
+                var moduleSymbol = ContainingAotModule;
+                var interfaceImpls = _handle.GetInterfaces();
+
+                if (interfaceImpls.Length > 0)
+                {
+                    var symbols = ArrayBuilder<NamedTypeSymbol>.GetInstance(interfaceImpls.Length);
+
+                    foreach (var interfaceImpl in interfaceImpls)
+                    {
+                        TypeSymbol typeSymbol = moduleSymbol.TypeHandleToTypeMap[interfaceImpl];
+
+
+                        var namedTypeSymbol = typeSymbol as NamedTypeSymbol ?? new UnsupportedMetadataTypeSymbol(); // interface list contains a bad type
+                        symbols.Add(namedTypeSymbol);
+                    }
+
+                    return symbols.ToImmutableAndFree();
+                }
+
+                return ImmutableArray<NamedTypeSymbol>.Empty;
+            }
+            catch (BadImageFormatException mrEx)
+            {
+                return ImmutableArray.Create<NamedTypeSymbol>(new UnsupportedMetadataTypeSymbol(mrEx));
+            }
+        }
+
+
         private static ExtendedErrorTypeSymbol CyclicInheritanceError(AotNamedTypeSymbol type, TypeSymbol declaredBase)
         {
             var info = new CSDiagnosticInfo(ErrorCode.ERR_ImportedCircularBase, declaredBase, type);
@@ -549,10 +595,439 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
         public override TypeKind TypeKind => _typekind;
 
+        List<AotFieldSymbol> ffs = new List<AotFieldSymbol>();
+        void Load()
+        {
+            Type wee;
+           
+       var fs=     Handle.GetMembers();
+            foreach(var f in fs)
+            {
+              switch (f)
+
+                {
+                    case FieldInfo field:
+                        var n_f = new AotFieldSymbol(this.ContainingAotModule, this, field);
+                        ffs.Add(n_f);
+                        break;
+                    case MethodBase mb:
+                        var m_f = new AotMethodSymbol( mb);
+                        // ffs.Add(n_f);
+                        break;
+                    case EventInfo ev:
+                        var e_f = new AotEventSymbol(ContainingAotModule, this, ev, default);
+                        break;
+                    case PropertyInfo pr:
+
+                        break;
+                }               
+             
+            }   
+      
+          
+        }
+        private void EnsureAllMembersAreLoaded()
+        {
+            if (_lazyMembersByName == null)
+            {
+                LoadMembers();
+            }
+        }
+        private MultiDictionary<string, AotFieldSymbol> CreateFields(ArrayBuilder<AotFieldSymbol> fieldMembers)
+        {
+            var privateFieldNameToSymbols = new MultiDictionary<string, AotFieldSymbol>();
+
+            var moduleSymbol = this.ContainingAotModule;
+            var module = moduleSymbol;
+
+            // for ordinary struct types we import private fields so that we can distinguish empty structs from non-empty structs
+            var isOrdinaryStruct = false;
+            // for ordinary embeddable struct types we import private members so that we can report appropriate errors if the structure is used 
+            var isOrdinaryEmbeddableStruct = false;
+
+            if (this.TypeKind == TypeKind.Struct)
+            {
+                if (this.SpecialType == Microsoft.CodeAnalysis.SpecialType.None)
+                {
+                    isOrdinaryStruct = true;
+                    isOrdinaryEmbeddableStruct = this.ContainingAssembly.IsLinked;
+                }
+                else
+                {
+                    isOrdinaryStruct = (this.SpecialType == Microsoft.CodeAnalysis.SpecialType.System_Nullable_T);
+                }
+            }
+
+            try
+            {
+                foreach (var fieldRid in (_handle).GetFields())
+                {
+                    try
+                    {
+                        if (!(isOrdinaryEmbeddableStruct ||
+                            (isOrdinaryStruct && (fieldRid.Attributes & FieldAttributes.Static) == 0) 
+                            ))
+                        {
+                            continue;
+                        }
+                    }
+                    catch (BadImageFormatException)
+                    { }
+
+                    var symbol = new AotFieldSymbol(moduleSymbol, this, fieldRid);
+                    fieldMembers.Add(symbol);
+
+                    // Only private fields are potentially backing fields for field-like events.
+                    if (symbol.DeclaredAccessibility == Accessibility.Private)
+                    {
+                        var name = symbol.Name;
+                        if (name.Length > 0)
+                        {
+                            privateFieldNameToSymbols.Add(name, symbol);
+                        }
+                    }
+                }
+            }
+            catch 
+            { }
+
+            return privateFieldNameToSymbols;
+        }
+
+        private void LoadMembers()
+        {
+            ArrayBuilder<Symbol> members = null;
+
+            if (_lazyMembersInDeclarationOrder.IsDefault)
+            {
+                EnsureNestedTypesAreLoaded();
+
+                members = ArrayBuilder<Symbol>.GetInstance();
+
+                Debug.Assert(SymbolKind.Field.ToSortOrder() < SymbolKind.Method.ToSortOrder());
+                Debug.Assert(SymbolKind.Method.ToSortOrder() < SymbolKind.Property.ToSortOrder());
+                Debug.Assert(SymbolKind.Property.ToSortOrder() < SymbolKind.Event.ToSortOrder());
+                Debug.Assert(SymbolKind.Event.ToSortOrder() < SymbolKind.NamedType.ToSortOrder());
+
+                if (this.TypeKind == TypeKind.Enum)
+                {
+           //    ..     EnsureEnumUnderlyingTypeIsLoaded(this.GetUncommonProperties());
+
+                    var module = this.ContainingAotModule;
+              
+
+                    try
+                    {
+                        foreach (var fieldDef in _handle.GetFields())
+                        {
+                            FieldAttributes fieldFlags;
+
+                            try
+                            {
+                                fieldFlags = fieldDef.Attributes;
+                                if ((fieldFlags & FieldAttributes.Static) == 0)
+                                {
+                                    continue;
+                                }
+                            }
+                            catch 
+                            {
+                                fieldFlags = 0;
+                            }
+
+                          
+                            {
+                                var field = new AotFieldSymbol(module, this, fieldDef);
+                                members.Add(field);
+                            }
+                        }
+                    }
+                    catch 
+                    { }
+
+                    var syntheticCtor = new SynthesizedInstanceConstructor(this);
+                    members.Add(syntheticCtor);
+                }
+                else
+                {
+                    ArrayBuilder<AotFieldSymbol> fieldMembers = ArrayBuilder<AotFieldSymbol>.GetInstance();
+                    ArrayBuilder<Symbol> nonFieldMembers = ArrayBuilder<Symbol>.GetInstance();
+
+                    MultiDictionary<string, AotFieldSymbol> privateFieldNameToSymbols = this.CreateFields(fieldMembers);
+
+                    // A method may be referenced as an accessor by one or more properties. And,
+                    // any of those properties may be "bogus" if one of the property accessors
+                    // does not match the property signature. If the method is referenced by at
+                    // least one non-bogus property, then the method is created as an accessor,
+                    // and (for purposes of error reporting if the method is referenced directly) the
+                    // associated property is set (arbitrarily) to the first non-bogus property found
+                    // in metadata. If the method is not referenced by any non-bogus properties,
+                    // then the method is created as a normal method rather than an accessor.
+
+                    // Create a dictionary of method symbols indexed by metadata handle
+                    // (to allow efficient lookup when matching property accessors).
+                    PooledDictionary<MethodInfo, AotMethodSymbol> methodHandleToSymbol = this.CreateMethods(nonFieldMembers);
+
+                    if (this.TypeKind == TypeKind.Struct)
+                    {
+                        bool haveParameterlessConstructor = false;
+                        foreach (MethodSymbol method in nonFieldMembers)
+                        {
+                            if (method.IsParameterlessConstructor())
+                            {
+                                haveParameterlessConstructor = true;
+                                break;
+                            }
+                        }
+
+                        // Structs have an implicit parameterless constructor, even if it
+                        // does not appear in metadata (11.3.8)
+                        if (!haveParameterlessConstructor)
+                        {
+                            nonFieldMembers.Insert(0, new SynthesizedInstanceConstructor(this));
+                        }
+                    }
+
+                    this.CreateProperties(methodHandleToSymbol, nonFieldMembers);
+                    this.CreateEvents(privateFieldNameToSymbols, methodHandleToSymbol, nonFieldMembers);
+
+                    foreach (AotFieldSymbol field in fieldMembers)
+                    {
+                        if ((object)field.AssociatedSymbol == null)
+                        {
+                            members.Add(field);
+                        }
+                        else
+                        {
+                            // As for source symbols, our public API presents the fiction that all
+                            // operations are performed on the event, rather than on the backing field.  
+                            // The backing field is not accessible through the API.  As an additional 
+                            // bonus, lookup is easier when the names don't collide.
+                            Debug.Assert(field.AssociatedSymbol.Kind == SymbolKind.Event);
+                        }
+                    }
+
+                    members.AddRange(nonFieldMembers);
+
+                    nonFieldMembers.Free();
+                    fieldMembers.Free();
+
+                    methodHandleToSymbol.Free();
+                }
+
+                // Now add types to the end.
+                int membersCount = members.Count;
+
+                foreach (var typeArray in _lazyNestedTypes.Values)
+                {
+                    members.AddRange(typeArray);
+                }
+
+                // Sort the types based on row id.
+           //     members.Sort(membersCount, DeclarationOrderTypeSymbolComparer.Instance);
+
+                var membersInDeclarationOrder = members.ToImmutable();
+
+#if DEBUG
+                ISymbol previous = null;
+
+                foreach (var s in membersInDeclarationOrder)
+                {
+                    if (previous == null)
+                    {
+                        previous = s;
+                    }
+                    else
+                    {
+                        ISymbol current = s;
+                        Debug.Assert(previous.Kind.ToSortOrder() <= current.Kind.ToSortOrder());
+                        previous = current;
+                    }
+                }
+#endif
+
+                if (!ImmutableInterlocked.InterlockedInitialize(ref _lazyMembersInDeclarationOrder, membersInDeclarationOrder))
+                {
+                    members.Free();
+                    members = null;
+                }
+                else
+                {
+                    // remove the types
+                    members.Clip(membersCount);
+                }
+            }
+
+            if (_lazyMembersByName == null)
+            {
+                if (members == null)
+                {
+                    members = ArrayBuilder<Symbol>.GetInstance();
+                    foreach (var member in _lazyMembersInDeclarationOrder)
+                    {
+                        if (member.Kind == SymbolKind.NamedType)
+                        {
+                            break;
+                        }
+                        members.Add(member);
+                    }
+                }
+
+                Dictionary<string, ImmutableArray<Symbol>> membersDict = GroupByName(members);
+
+                var exchangeResult = CVM.AHelper.CompareExchange(ref _lazyMembersByName, membersDict, null);
+                if (exchangeResult == null)
+                {
+                    // we successfully swapped in the members dictionary.
+
+                    // Now, use these as the canonical member names.  This saves us memory by not having
+                    // two collections around at the same time with redundant data in them.
+                    //
+                    // NOTE(cyrusn): We must use an interlocked exchange here so that the full
+                    // construction of this object will be seen from 'MemberNames'.  Also, doing a
+                    // straight InterlockedExchange here is the right thing to do.  Consider the case
+                    // where one thread is calling in through "MemberNames" while we are in the middle
+                    // of this method.  Either that thread will compute the member names and store it
+                    // first (in which case we overwrite it), or we will store first (in which case
+                    // their CompareExchange(..., ..., null) will fail.  Either way, this will be certain
+                    // to become the canonical set of member names.
+                    //
+                    // NOTE(cyrusn): This means that it is possible (and by design) for people to get a
+                    // different object back when they call MemberNames multiple times.  However, outside
+                    // of object identity, both collections should appear identical to the user.
+                    var memberNames = SpecializedCollections.ReadOnlyCollection(membersDict.Keys);
+                    CVM.AHelper.Exchange(ref _lazyMemberNames, memberNames);
+                }
+            }
+
+            if (members != null)
+            {
+                members.Free();
+            }
+        }
+        private PooledDictionary<MethodInfo, AotMethodSymbol> CreateMethods(ArrayBuilder<Symbol> members)
+        {
+            var module = this.ContainingAotModule;
+            var map = PooledDictionary<MethodInfo, AotMethodSymbol>.GetInstance();
+
+            // for ordinary embeddable struct types we import private members so that we can report appropriate errors if the structure is used 
+            var isOrdinaryEmbeddableStruct = (this.TypeKind == TypeKind.Struct) && (this.SpecialType == Microsoft.CodeAnalysis.SpecialType.None) && this.ContainingAssembly.IsLinked;
+
+            try
+            {
+                foreach (var methodHandle in _handle.GetMethods())
+                {
+                  //  if (isOrdinaryEmbeddableStruct || module.ShouldImportMethod(methodHandle, moduleSymbol.ImportOptions))
+                    {
+                        var method = new AotMethodSymbol(module, this, methodHandle);
+                        members.Add(method);
+                        map.Add(methodHandle, method);
+                    }
+                }
+            }
+            catch (BadImageFormatException)
+            { }
+
+            return map;
+        }
+
+        private AotMethodSymbol GetAccessorMethod(Dictionary<MethodInfo, AotMethodSymbol> methodHandleToSymbol, MethodInfo methodDef)
+        {
+            if (methodDef==null)
+            {
+                return null;
+            }
+
+            AotMethodSymbol method;
+            bool found = methodHandleToSymbol.TryGetValue(methodDef, out method);
+            Debug.Assert(found);
+            return method;
+        }
+        private void CreateProperties(Dictionary<MethodInfo, AotMethodSymbol> methodHandleToSymbol, ArrayBuilder<Symbol> members)
+        {
+            var module = this.ContainingAotModule;
+
+            try
+            {
+                foreach (var propertyDef in (_handle).GetProperties())
+                {
+                    try
+                    {
+
+                        AotMethodSymbol getMethod = GetAccessorMethod( methodHandleToSymbol, propertyDef.GetGetMethod());
+                        AotMethodSymbol setMethod = GetAccessorMethod( methodHandleToSymbol, propertyDef.GetSetMethod());
+
+                        if (((object)getMethod != null) || ((object)setMethod != null))
+                        {
+                            members.Add(AotPropertySymbol.Create(module, this, propertyDef, getMethod, setMethod));
+                        }
+                    }
+                    catch 
+                    { }
+                }
+            }
+            catch 
+            { }
+        }
+        public override ImmutableArray<Symbol> GetMembers()
+        {
+            EnsureAllMembersAreLoaded();
+            return _lazyMembersInDeclarationOrder;
+        }
         public override ImmutableArray<Symbol> GetMembers(string name)
         {
-            throw new NotImplementedException();
+
+            EnsureAllMembersAreLoaded();
+
+            ImmutableArray<Symbol> m;
+            if (!_lazyMembersByName.TryGetValue(name, out m))
+            {
+                m = ImmutableArray<Symbol>.Empty;
+            }
+
+            // nested types are not common, but we need to check just in case
+            ImmutableArray<AotNamedTypeSymbol> t;
+            if (_lazyNestedTypes.TryGetValue(name, out t))
+            {
+                m = m.Concat(StaticCast<Symbol>.From(t));
+            }
+
+            return m;
         }
+        private void CreateEvents(
+         MultiDictionary<string, AotFieldSymbol> privateFieldNameToSymbols,
+         Dictionary<MethodInfo, AotMethodSymbol> methodHandleToSymbol,
+         ArrayBuilder<Symbol> members)
+        {
+            var module = this.ContainingAotModule;
+
+            try
+            {
+                foreach (var eventRid in (_handle).GetEvents())
+                {
+                    try
+                    {
+                     
+
+                        // NOTE: C# ignores all other accessors (most notably, raise/fire).
+                        AotMethodSymbol addMethod = GetAccessorMethod( methodHandleToSymbol, eventRid.GetAddMethod());
+                        AotMethodSymbol removeMethod = GetAccessorMethod( methodHandleToSymbol, eventRid.GetRemoveMethod());
+
+                        // NOTE: both accessors are required, but that will be reported separately.
+                        // Create the symbol unless both accessors are missing.
+                        if (((object)addMethod != null) || ((object)removeMethod != null))
+                        {
+                            members.Add(new AotEventSymbol(module, this, eventRid, addMethod, removeMethod, privateFieldNameToSymbols));
+                        }
+                    }
+                    catch 
+                    { }
+                }
+            }
+            catch (BadImageFormatException)
+            { }
+        }
+
 
     }
 }

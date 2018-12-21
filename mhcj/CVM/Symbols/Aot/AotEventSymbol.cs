@@ -4,6 +4,7 @@ using CVM.Collections.Immutable;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -24,7 +25,12 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private const int UnsetAccessibility = -1;
         private int _lazyDeclaredAccessibility = UnsetAccessibility;
-
+        private AotModuleSymbol module;
+        private AotNamedTypeSymbol aotNamedTypeSymbol;
+        private EventInfo eventRid;
+        private AotMethodSymbol addMethod;
+        private AotMethodSymbol removeMethod;
+        private MultiDictionary<string, AotFieldSymbol> privateFieldNameToSymbols;
         private readonly System.Reflection.EventAttributes _flags;
 
         public override TypeSymbolWithAnnotations Type
@@ -170,8 +176,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         public AotEventSymbol(AotModuleSymbol moduleSymbol,
             AotNamedTypeSymbol containingType,
             System.Reflection.EventInfo handle,
-            AotMethodSymbol addMethod,
-            AotMethodSymbol removeMethod,
+         
             MultiDictionary<string, AotFieldSymbol> privateFieldNameToSymbols)
         {
             Debug.Assert((object)moduleSymbol != null);
@@ -196,6 +201,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
 
             }
+        }
+
+        public AotEventSymbol(AotModuleSymbol module, AotNamedTypeSymbol aotNamedTypeSymbol, EventInfo eventRid, AotMethodSymbol addMethod, AotMethodSymbol removeMethod, MultiDictionary<string, AotFieldSymbol> privateFieldNameToSymbols)
+        {
+            this.module = module;
+            this.aotNamedTypeSymbol = aotNamedTypeSymbol;
+            this.eventRid = eventRid;
+            this.addMethod = addMethod;
+            this.removeMethod = removeMethod;
+            this.privateFieldNameToSymbols = privateFieldNameToSymbols;
         }
     }
 }
