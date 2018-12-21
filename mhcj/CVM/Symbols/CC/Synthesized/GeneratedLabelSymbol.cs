@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private static string LabelName(string name)
         {
 #if DEBUG
-            int seq = System.Threading.Interlocked.Add(ref s_sequence, 1);
+            int seq = CVM.AHelper.Add(ref s_sequence, 1);
             return "<" + name + "-" + (seq & 0xffff) + ">";
 #else
             return name;

@@ -283,7 +283,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // Initialize the bag so that data decoded from early attributes can be stored onto it.
                 if (lazyCustomAttributesBag == null)
                 {
-                    Interlocked.CompareExchange(ref lazyCustomAttributesBag, new CustomAttributesBag<CSharpAttributeData>(), null);
+                    CVM.AHelper.CompareExchange(ref lazyCustomAttributesBag, new CustomAttributesBag<CSharpAttributeData>(), null);
                 }
 
                 // Bind the attribute types and then early decode them.
@@ -336,7 +336,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 boundAttributes = ImmutableArray<CSharpAttributeData>.Empty;
                 wellKnownAttributeData = null;
-                Interlocked.CompareExchange(ref lazyCustomAttributesBag, CustomAttributesBag<CSharpAttributeData>.WithEmptyData(), null);
+                CVM.AHelper.CompareExchange(ref lazyCustomAttributesBag, CustomAttributesBag<CSharpAttributeData>.WithEmptyData(), null);
                 this.PostEarlyDecodeWellKnownAttributeTypes();
             }
 

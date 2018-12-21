@@ -325,10 +325,10 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// do {
         ///     tmp1 = tmp0;
         ///     tmp2 = (DelegateType)Delegate.Combine(tmp1, value); //Remove for -=
-        ///     tmp0 = Interlocked.CompareExchange&lt;DelegateType&gt;(ref _event, tmp2, tmp1);
+        ///     tmp0 = CVM.AHelper.CompareExchange&lt;DelegateType&gt;(ref _event, tmp2, tmp1);
         /// } while ((object)tmp0 != (object)tmp1);
         /// 
-        /// Note, if System.Threading.Interlocked.CompareExchange&lt;T&gt; is not available,
+        /// Note, if System.Threading.CVM.AHelper.CompareExchange&lt;T&gt; is not available,
         /// we emit the following code and mark the method Synchronized (unless it is a struct).
         /// 
         /// _event = (DelegateType)Delegate.Combine(_event, value); //Remove for -=
@@ -467,13 +467,13 @@ namespace Microsoft.CodeAnalysis.CSharp
                 { WasCompilerGenerated = true })
             { WasCompilerGenerated = true };
 
-            // Interlocked.CompareExchange<DelegateType>(ref _event, tmp2, tmp1)
+            // CVM.AHelper.CompareExchange<DelegateType>(ref _event, tmp2, tmp1)
             BoundExpression compareExchange = BoundCall.Synthesized(syntax,
                 receiverOpt: null,
                 method: compareExchangeMethod,
                 arguments: ImmutableArray.Create<BoundExpression>(boundBackingField, boundTmps[2], boundTmps[1]));
 
-            // tmp0 = Interlocked.CompareExchange<DelegateType>(ref _event, tmp2, tmp1);
+            // tmp0 = CVM.AHelper.CompareExchange<DelegateType>(ref _event, tmp2, tmp1);
             BoundStatement tmp0Update = new BoundExpressionStatement(syntax,
                 expression: new BoundAssignmentOperator(syntax,
                     left: boundTmps[0],

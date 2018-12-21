@@ -559,7 +559,7 @@ namespace Microsoft.CodeAnalysis.Emit
             SynthesizedDefinitions defs = GetCacheOfSynthesizedDefinitions(container);
             if (defs.NestedTypes == null)
             {
-                Interlocked.CompareExchange(ref defs.NestedTypes, new ConcurrentQueue<Cci.INestedTypeDefinition>(), null);
+                CVM.AHelper.CompareExchange(ref defs.NestedTypes, new ConcurrentQueue<Cci.INestedTypeDefinition>(), null);
             }
 
             defs.NestedTypes.Enqueue(nestedType);
@@ -614,7 +614,7 @@ namespace Microsoft.CodeAnalysis.Emit
             SynthesizedDefinitions defs = GetCacheOfSynthesizedDefinitions(container);
             if (defs.Methods == null)
             {
-                Interlocked.CompareExchange(ref defs.Methods, new ConcurrentQueue<Cci.IMethodDefinition>(), null);
+                CVM.AHelper.CompareExchange(ref defs.Methods, new ConcurrentQueue<Cci.IMethodDefinition>(), null);
             }
 
             defs.Methods.Enqueue(method);
@@ -635,7 +635,7 @@ namespace Microsoft.CodeAnalysis.Emit
             SynthesizedDefinitions defs = GetCacheOfSynthesizedDefinitions(container);
             if (defs.Properties == null)
             {
-                Interlocked.CompareExchange(ref defs.Properties, new ConcurrentQueue<Cci.IPropertyDefinition>(), null);
+                CVM.AHelper.CompareExchange(ref defs.Properties, new ConcurrentQueue<Cci.IPropertyDefinition>(), null);
             }
 
             defs.Properties.Enqueue(property);
@@ -656,7 +656,7 @@ namespace Microsoft.CodeAnalysis.Emit
             SynthesizedDefinitions defs = GetCacheOfSynthesizedDefinitions(container);
             if (defs.Fields == null)
             {
-                Interlocked.CompareExchange(ref defs.Fields, new ConcurrentQueue<Cci.IFieldDefinition>(), null);
+                CVM.AHelper.CompareExchange(ref defs.Fields, new ConcurrentQueue<Cci.IFieldDefinition>(), null);
             }
 
             defs.Fields.Enqueue(field);
@@ -719,7 +719,7 @@ namespace Microsoft.CodeAnalysis.Emit
                 {
                     result = new ArrayMethods();
 
-                    if (Interlocked.CompareExchange(ref _lazyArrayMethods, result, null) != null)
+                    if (CVM.AHelper.CompareExchange(ref _lazyArrayMethods, result, null) != null)
                     {
                         result = _lazyArrayMethods;
                     }
@@ -751,7 +751,7 @@ namespace Microsoft.CodeAnalysis.Emit
                         this.GetSpecialType(SpecialType.System_Int64, syntaxNodeOpt, diagnostics),
                         SynthesizeAttribute(WellKnownMember.System_Runtime_CompilerServices_CompilerGeneratedAttribute__ctor));
 
-                if (Interlocked.CompareExchange(ref _privateImplementationDetails, result, null) != null)
+                if (CVM.AHelper.CompareExchange(ref _privateImplementationDetails, result, null) != null)
                 {
                     result = _privateImplementationDetails;
                 }

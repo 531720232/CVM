@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis
 
         protected void SetParentOperation(IOperation parent)
         {
-            var result = Interlocked.CompareExchange(ref _parentDoNotAccessDirectly, parent, s_unset);
+            var result = CVM.AHelper.CompareExchange(ref _parentDoNotAccessDirectly, parent, s_unset);
 
             // tree must belong to same semantic model if parent is given
             Debug.Assert(parent == null || ((Operation)parent).OwningSemanticModel == OwningSemanticModel ||

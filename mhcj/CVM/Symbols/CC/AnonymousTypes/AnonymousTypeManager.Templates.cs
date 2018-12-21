@@ -125,7 +125,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     //// TODO (tomat): avoid recursion
                     //var previousCache = (previousSubmission == null) ? null : previousSubmission.AnonymousTypeManager.AnonymousTypeTemplates;
 
-                    //Interlocked.CompareExchange(ref _lazyAnonymousTypeTemplates,
+                    //CVM.AHelper.CompareExchange(ref _lazyAnonymousTypeTemplates,
                     //                            previousCache == null
                     //                                ? new ConcurrentDictionary<string, AnonymousTypeTemplateSymbol>()
                     //                                : new ConcurrentDictionary<string, AnonymousTypeTemplateSymbol>(previousCache),
@@ -147,7 +147,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     //// TODO (tomat): avoid recursion
                     //var previousCache = (previousSubmission == null) ? null : previousSubmission.AnonymousTypeManager._lazySynthesizedDelegates;
 
-                    //Interlocked.CompareExchange(ref _lazySynthesizedDelegates,
+                    //CVM.AHelper.CompareExchange(ref _lazySynthesizedDelegates,
                     //                            previousCache == null
                     //                                ? new ConcurrentDictionary<SynthesizedDelegateKey, SynthesizedDelegateValue>()
                     //                                : new ConcurrentDictionary<SynthesizedDelegateKey, SynthesizedDelegateValue>(previousCache),

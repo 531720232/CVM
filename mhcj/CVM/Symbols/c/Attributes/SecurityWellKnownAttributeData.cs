@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis
 
             if (_lazySecurityActions == null)
             {
-                Interlocked.CompareExchange(ref _lazySecurityActions, new byte[totalSourceAttributes], null);
+                CVM.AHelper.CompareExchange(ref _lazySecurityActions, new byte[totalSourceAttributes], null);
             }
 
             Debug.Assert(_lazySecurityActions.Length == totalSourceAttributes);
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis
 
             if (_lazyPathsForPermissionSetFixup == null)
             {
-                Interlocked.CompareExchange(ref _lazyPathsForPermissionSetFixup, new string[totalSourceAttributes], null);
+                CVM.AHelper.CompareExchange(ref _lazyPathsForPermissionSetFixup, new string[totalSourceAttributes], null);
             }
 
             Debug.Assert(_lazyPathsForPermissionSetFixup.Length == totalSourceAttributes);

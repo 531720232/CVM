@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     newPool[i] = new IndexedTypeParameterSymbol(i);
                 }
 
-                Interlocked.CompareExchange(ref s_parameterPool, newPool, initialPool);
+                CVM.AHelper.CompareExchange(ref s_parameterPool, newPool, initialPool);
 
                 // repeat if race condition occurred and someone else resized the pool before us
                 // and the new pool is still too small

@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                     // PERF: Avoid over-allocation. In many cases, there's only 1 entry and we don't expect concurrent updates.
                     map = new ConcurrentDictionary<Symbol, SymbolAndDiagnostics>(concurrencyLevel: 1, capacity: 1);
-                    return Interlocked.CompareExchange(ref _implementationForInterfaceMemberMap, map, null) ?? map;
+                    return CVM.AHelper.CompareExchange(ref _implementationForInterfaceMemberMap, map, null) ?? map;
                 }
             }
 
@@ -95,7 +95,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                     // NOTE: we are assigning lazyInterfaceInfo via interlocked not for correctness, 
                     // we just do not want to override an existing info that could be partially filled.
-                    return Interlocked.CompareExchange(ref _lazyInterfaceInfo, info, null) ?? info;
+                    return CVM.AHelper.CompareExchange(ref _lazyInterfaceInfo, info, null) ?? info;
                 }
             }
 
@@ -408,7 +408,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                 if (info.interfacesAndTheirBaseInterfaces == null)
                 {
-                    Interlocked.CompareExchange(ref info.interfacesAndTheirBaseInterfaces, MakeInterfacesAndTheirBaseInterfaces(this.InterfacesNoUseSiteDiagnostics()), null);
+                    CVM.AHelper.CompareExchange(ref info.interfacesAndTheirBaseInterfaces, MakeInterfacesAndTheirBaseInterfaces(this.InterfacesNoUseSiteDiagnostics()), null);
                 }
 
                 return info.interfacesAndTheirBaseInterfaces;
@@ -1438,7 +1438,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (info.explicitInterfaceImplementationMap == null)
             {
-                Interlocked.CompareExchange(ref info.explicitInterfaceImplementationMap, MakeExplicitInterfaceImplementationMap(), null);
+                CVM.AHelper.CompareExchange(ref info.explicitInterfaceImplementationMap, MakeExplicitInterfaceImplementationMap(), null);
             }
 
             Symbol implementingMethod;
@@ -1482,7 +1482,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 if (_lazyAbstractMembers == null)
                 {
-                    Interlocked.CompareExchange(ref _lazyAbstractMembers, ComputeAbstractMembers(), null);
+                    CVM.AHelper.CompareExchange(ref _lazyAbstractMembers, ComputeAbstractMembers(), null);
                 }
                 return _lazyAbstractMembers;
             }

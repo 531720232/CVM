@@ -202,7 +202,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             if (_nameToMembersMap == null)
             {
                 var diagnostics = DiagnosticBag.GetInstance();
-                if (Interlocked.CompareExchange(ref _nameToMembersMap, MakeNameToMembersMap(diagnostics), null) == null)
+                if (CVM.AHelper.CompareExchange(ref _nameToMembersMap, MakeNameToMembersMap(diagnostics), null) == null)
                 {
                     // NOTE: the following is not cancellable.  Once we've set the
                     // members, we *must* do the following to make sure we're in a consistent state.
@@ -227,7 +227,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 // NOTE: This method depends on MakeNameToMembersMap() on creating a proper 
                 // NOTE: type of the array, see comments in MakeNameToMembersMap() for details
-                Interlocked.CompareExchange(ref _nameToTypeMembersMap, GetTypesFromMemberMap(GetNameToMembersMap()), null);
+                CVM.AHelper.CompareExchange(ref _nameToTypeMembersMap, GetTypesFromMemberMap(GetNameToMembersMap()), null);
             }
 
             return _nameToTypeMembersMap;

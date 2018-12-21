@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 var info = new IteratorInfo(elementType, elementTypeDiagnostics.ToReadOnlyAndFree());
 
-                Interlocked.CompareExchange(ref _iteratorInfo, info, IteratorInfo.Empty);
+                CVM.AHelper.CompareExchange(ref _iteratorInfo, info, IteratorInfo.Empty);
             }
 
             if (node == null)

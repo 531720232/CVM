@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis
 
             if (_lazyStateMachineTypes == null)
             {
-                Interlocked.CompareExchange(ref _lazyStateMachineTypes, new Dictionary<TMethodSymbol, TNamedTypeSymbol>(), null);
+                CVM.AHelper.CompareExchange(ref _lazyStateMachineTypes, new Dictionary<TMethodSymbol, TNamedTypeSymbol>(), null);
             }
 
             lock (_lazyStateMachineTypes)

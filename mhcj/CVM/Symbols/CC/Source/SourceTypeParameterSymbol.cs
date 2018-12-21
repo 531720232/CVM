@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     var typeParameter = (SourceTypeParameterSymbolBase)sourceMethod.SourcePartialDefinition.TypeParameters[_ordinal];
                     CustomAttributesBag<CSharpAttributeData> attributesBag = typeParameter.GetAttributesBag();
 
-                    lazyAttributesStored = Interlocked.CompareExchange(ref _lazyCustomAttributesBag, attributesBag, null) == null;
+                    lazyAttributesStored = CVM.AHelper.CompareExchange(ref _lazyCustomAttributesBag, attributesBag, null) == null;
                 }
 
                 if (lazyAttributesStored)
@@ -226,7 +226,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 var diagnostics = DiagnosticBag.GetInstance();
                 var bounds = this.ResolveBounds(inProgress, early, diagnostics);
 
-                if (ReferenceEquals(Interlocked.CompareExchange(ref _lazyBounds, bounds, currentBounds), currentBounds))
+                if (ReferenceEquals(CVM.AHelper.CompareExchange(ref _lazyBounds, bounds, currentBounds), currentBounds))
                 {
                     if (_lazyBounds?.IsEarly != true)
                     {
@@ -671,7 +671,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         Debug.Assert(overriddenTypeParameters.Length == overridingTypeParameters.Length);
 
                         var typeMap = new TypeMap(overriddenTypeParameters, overridingTypeParameters, allowAlpha: true);
-                        Interlocked.CompareExchange(ref _lazyTypeMap, typeMap, null);
+                        CVM.AHelper.CompareExchange(ref _lazyTypeMap, typeMap, null);
                     }
                 }
 
@@ -685,7 +685,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 if (ReferenceEquals(_lazyOverriddenMethod, ErrorMethodSymbol.UnknownMethod))
                 {
-                    Interlocked.CompareExchange(ref _lazyOverriddenMethod, this.GetOverriddenMethod(_overridingMethod), ErrorMethodSymbol.UnknownMethod);
+                    CVM.AHelper.CompareExchange(ref _lazyOverriddenMethod, this.GetOverriddenMethod(_overridingMethod), ErrorMethodSymbol.UnknownMethod);
                 }
                 return _lazyOverriddenMethod;
             }

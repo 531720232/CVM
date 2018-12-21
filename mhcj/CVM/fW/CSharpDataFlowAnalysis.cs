@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     var result = Succeeded
                         ? UnassignedVariablesWalker.Analyze(_context.Compilation, _context.Member, _context.BoundNode)
                         : new HashSet<Symbol>();
-                    Interlocked.CompareExchange(ref _unassignedVariables, result, null);
+                    CVM.AHelper.CompareExchange(ref _unassignedVariables, result, null);
                 }
 
                 return _unassignedVariables;
@@ -303,7 +303,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     var result = Succeeded
                         ? UnassignedAddressTakenVariablesWalker.Analyze(_context.Compilation, _context.Member, _context.BoundNode)
                         : new HashSet<PrefixUnaryExpressionSyntax>();
-                    Interlocked.CompareExchange(ref _unassignedVariableAddressOfSyntaxes, result, null);
+                    CVM.AHelper.CompareExchange(ref _unassignedVariableAddressOfSyntaxes, result, null);
                 }
 
                 return _unassignedVariableAddressOfSyntaxes;

@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (lazySignature == null)
             {
-                Interlocked.CompareExchange(ref lazySignature, MakeParamTypesAndRefKinds(parameters), null);
+                CVM.AHelper.CompareExchange(ref lazySignature, MakeParamTypesAndRefKinds(parameters), null);
             }
         }
     }

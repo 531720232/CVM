@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         }
                     }
 
-                    Interlocked.CompareExchange(ref _lazyLockedOrDisposedVariables, lockedOrDisposedVariables, null);
+                    CVM.AHelper.CompareExchange(ref _lazyLockedOrDisposedVariables, lockedOrDisposedVariables, null);
                 }
                 Debug.Assert(_lazyLockedOrDisposedVariables != null);
                 return _lazyLockedOrDisposedVariables;
@@ -77,7 +77,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 // Filter out method group in conversion.
                 DiagnosticBag expressionDiagnostics = DiagnosticBag.GetInstance();
                 BoundExpression boundExpression = originalBinder.BindValue(TargetExpressionSyntax, expressionDiagnostics, Binder.BindValueKind.RValueOrMethodGroup);
-                Interlocked.CompareExchange(ref _lazyExpressionAndDiagnostics, new ExpressionAndDiagnostics(boundExpression, expressionDiagnostics.ToReadOnlyAndFree()), null);
+                CVM.AHelper.CompareExchange(ref _lazyExpressionAndDiagnostics, new ExpressionAndDiagnostics(boundExpression, expressionDiagnostics.ToReadOnlyAndFree()), null);
             }
             Debug.Assert(_lazyExpressionAndDiagnostics != null);
 

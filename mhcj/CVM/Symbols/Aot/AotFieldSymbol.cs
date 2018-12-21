@@ -355,7 +355,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     }
                 }
 
-                Interlocked.CompareExchange(
+                CVM.AHelper.CompareExchange(
                     ref _lazyConstantValue,
                     value,
                     Microsoft.CodeAnalysis.ConstantValue.Unset);

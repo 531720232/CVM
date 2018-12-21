@@ -173,7 +173,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         this, this, DeclaringCompilation.MergedRootDeclaration, diagnostics);
                     Debug.Assert(diagnostics.IsEmptyWithoutResolution);
                     diagnostics.Free();
-                    Interlocked.CompareExchange(ref _globalNamespace, globalNS, null);
+                    CVM.AHelper.CompareExchange(ref _globalNamespace, globalNS, null);
                 }
 
                 return _globalNamespace;

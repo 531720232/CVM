@@ -151,7 +151,7 @@ namespace Microsoft.CodeAnalysis.Collections
             if (localMap == null)
             {
                 concurrentMap = CreateConcurrentDictionary();
-                localMap = Interlocked.CompareExchange(ref _map, concurrentMap, null);
+                localMap = CVM.AHelper.CompareExchange(ref _map, concurrentMap, null);
                 if (localMap == null)
                 {
                     return AddToConcurrentMap(concurrentMap, key);
@@ -260,7 +260,7 @@ namespace Microsoft.CodeAnalysis.Collections
                     fullyPopulatedMap = CreateFullyPopulatedMap(currentMap);
                 }
 
-                var replacedMap = Interlocked.CompareExchange(ref _map, fullyPopulatedMap, currentMap);
+                var replacedMap = CVM.AHelper.CompareExchange(ref _map, fullyPopulatedMap, currentMap);
                 if (replacedMap == currentMap)
                 {
                     // Normal exit.

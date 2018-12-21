@@ -53,7 +53,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 Debug.Assert(compilation != null);
 
                 // NOTE: LazyMethodChecks calls us within a lock, so we use regular assignments,
-                // rather than Interlocked.CompareExchange.
+                // rather than CVM.AHelper.CompareExchange.
                 if (_event.IsWindowsRuntimeEvent)
                 {
                     TypeSymbol eventTokenType = compilation.GetWellKnownType(WellKnownType.System_Runtime_InteropServices_WindowsRuntime_EventRegistrationToken);

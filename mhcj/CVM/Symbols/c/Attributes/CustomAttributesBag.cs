@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis
         public bool SetEarlyDecodedWellKnownAttributeData(EarlyWellKnownAttributeData data)
         {
             WellKnownAttributeData.Seal(data);
-            var setOnOurThread = Interlocked.CompareExchange(ref _earlyDecodedWellKnownAttributeData, data, null) == null;
+            var setOnOurThread = CVM.AHelper.CompareExchange(ref _earlyDecodedWellKnownAttributeData, data, null) == null;
             NotePartComplete(CustomAttributeBagCompletionPart.EarlyDecodedWellKnownAttributeData);
             return setOnOurThread;
         }
@@ -77,7 +77,7 @@ namespace Microsoft.CodeAnalysis
         public bool SetDecodedWellKnownAttributeData(WellKnownAttributeData data)
         {
             WellKnownAttributeData.Seal(data);
-            var setOnOurThread = Interlocked.CompareExchange(ref _decodedWellKnownAttributeData, data, null) == null;
+            var setOnOurThread = CVM.AHelper.CompareExchange(ref _decodedWellKnownAttributeData, data, null) == null;
             NotePartComplete(CustomAttributeBagCompletionPart.DecodedWellKnownAttributeData);
             return setOnOurThread;
         }

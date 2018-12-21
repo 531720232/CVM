@@ -158,7 +158,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     var diagnostics = DiagnosticBag.GetInstance();
 
-                    if (Interlocked.CompareExchange(
+                    if (CVM.AHelper.CompareExchange(
                         ref _lazyDefaultSyntaxValue,
                         MakeDefaultExpression(diagnostics, ParameterBinderOpt),
                         ConstantValue.Unset) == ConstantValue.Unset)
@@ -430,7 +430,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if ((object)copyFrom != null)
                 {
                     var attributesBag = copyFrom.GetAttributesBag();
-                    bagCreatedOnThisThread = Interlocked.CompareExchange(ref _lazyCustomAttributesBag, attributesBag, null) == null;
+                    bagCreatedOnThisThread = CVM.AHelper.CompareExchange(ref _lazyCustomAttributesBag, attributesBag, null) == null;
                 }
                 else
                 {

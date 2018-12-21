@@ -1347,7 +1347,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
         {
             if (_fixedImplementationTypes == null)
             {
-                Interlocked.CompareExchange(ref _fixedImplementationTypes, new Dictionary<FieldSymbol, NamedTypeSymbol>(), null);
+                CVM.AHelper.CompareExchange(ref _fixedImplementationTypes, new Dictionary<FieldSymbol, NamedTypeSymbol>(), null);
             }
 
             lock (_fixedImplementationTypes)

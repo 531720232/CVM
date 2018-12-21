@@ -707,7 +707,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return true;
             }
 
-            Interlocked.CompareExchange(ref _lazyThisParameter, new ThisParameterSymbol(this), null);
+            CVM.AHelper.CompareExchange(ref _lazyThisParameter, new ThisParameterSymbol(this), null);
             thisParameter = _lazyThisParameter;
             return true;
         }
@@ -721,7 +721,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             set
             {
                 Debug.Assert((object)_iteratorElementType == null || _iteratorElementType == value);
-                Interlocked.CompareExchange(ref _iteratorElementType, value, null);
+                CVM.AHelper.CompareExchange(ref _iteratorElementType, value, null);
             }
         }
 
@@ -741,7 +741,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 this.LazyMethodChecks();
                 if (_lazyOverriddenOrHiddenMembers == null)
                 {
-                    Interlocked.CompareExchange(ref _lazyOverriddenOrHiddenMembers, this.MakeOverriddenOrHiddenMembers(), null);
+                    CVM.AHelper.CompareExchange(ref _lazyOverriddenOrHiddenMembers, this.MakeOverriddenOrHiddenMembers(), null);
                 }
 
                 return _lazyOverriddenOrHiddenMembers;

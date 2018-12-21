@@ -82,8 +82,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
                 //    _lazyHasErrors = ThreeState.True;
                 //}
 
-                //Interlocked.CompareExchange(ref _lazyAttributeConstructor, attributeConstructor, null);
-                //Interlocked.CompareExchange(ref _lazyAttributeClass, (NamedTypeSymbol)attributeClass, ErrorTypeSymbol.UnknownResultType); // Serves as a flag, so do it last.
+                //CVM.AHelper.CompareExchange(ref _lazyAttributeConstructor, attributeConstructor, null);
+                //CVM.AHelper.CompareExchange(ref _lazyAttributeClass, (NamedTypeSymbol)attributeClass, ErrorTypeSymbol.UnknownResultType); // Serves as a flag, so do it last.
             }
 #pragma warning restore 0252
         }

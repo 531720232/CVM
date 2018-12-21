@@ -108,7 +108,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
         internal void Freeze()
         {
-            var wasFrozen = Interlocked.Exchange(ref _frozen, 1);
+            var wasFrozen = CVM.AHelper.Exchange(ref _frozen, 1);
             if (wasFrozen != 0)
             {
                 throw new InvalidOperationException();
@@ -168,7 +168,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
             if (_mvidField == null)
             {
                 Debug.Assert(!IsFrozen);
-                Interlocked.CompareExchange(ref _mvidField, new ModuleVersionIdField(this, mvidType), null);
+                CVM.AHelper.CompareExchange(ref _mvidField, new ModuleVersionIdField(this, mvidType), null);
             }
 
             Debug.Assert(_mvidField.Type.Equals(mvidType));

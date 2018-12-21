@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             if (_lazyImports == null)
             {
-                Interlocked.CompareExchange(ref _lazyImports, _computeImports(basesBeingResolved), null);
+                CVM.AHelper.CompareExchange(ref _lazyImports, _computeImports(basesBeingResolved), null);
             }
 
             return _lazyImports;
@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         importChain = new ImportChain(GetImports(basesBeingResolved: null), importChain);
                     }
 
-                    Interlocked.CompareExchange(ref _lazyImportChain, importChain, null);
+                    CVM.AHelper.CompareExchange(ref _lazyImportChain, importChain, null);
                 }
 
                 Debug.Assert(_lazyImportChain != null);

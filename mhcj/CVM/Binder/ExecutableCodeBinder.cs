@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 methodSymbolsWithYield = ImmutableArray<MethodSymbol>.Empty;
             }
 
-            Interlocked.CompareExchange(ref _lazyBinderMap, map, null);
+            CVM.AHelper.CompareExchange(ref _lazyBinderMap, map, null);
             ImmutableInterlocked.InterlockedCompareExchange(ref _methodSymbolsWithYield, methodSymbolsWithYield, default(ImmutableArray<MethodSymbol>));
         }
 

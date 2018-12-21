@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                     var diagnostics = DiagnosticBag.GetInstance();
                     var acyclicBase = this.MakeAcyclicBaseType(diagnostics);
-                    if (ReferenceEquals(Interlocked.CompareExchange(ref _lazyBaseType, acyclicBase, ErrorTypeSymbol.UnknownResultType), ErrorTypeSymbol.UnknownResultType))
+                    if (ReferenceEquals(CVM.AHelper.CompareExchange(ref _lazyBaseType, acyclicBase, ErrorTypeSymbol.UnknownResultType), ErrorTypeSymbol.UnknownResultType))
                     {
                         AddDeclarationDiagnostics(diagnostics);
                     }
@@ -209,7 +209,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             if (ReferenceEquals(_lazyDeclaredBases, null))
             {
                 var diagnostics = DiagnosticBag.GetInstance();
-                if (Interlocked.CompareExchange(ref _lazyDeclaredBases, MakeDeclaredBases(basesBeingResolved, diagnostics), null) == null)
+                if (CVM.AHelper.CompareExchange(ref _lazyDeclaredBases, MakeDeclaredBases(basesBeingResolved, diagnostics), null) == null)
                 {
                     AddDeclarationDiagnostics(diagnostics);
                 }

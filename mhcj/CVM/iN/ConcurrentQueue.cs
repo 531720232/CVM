@@ -747,7 +747,7 @@ namespace CVM.Collections
 
                 int newhigh = SEGMENT_SIZE; //initial value set to be over the boundary
 
-                //We need do Interlocked.Increment and value/state update in a finally block to ensure that they run
+                //We need do CVM.AHelper.Increment and value/state update in a finally block to ensure that they run
                 //without interruption. This is to prevent anything from happening between them, and another dequeue
                 //thread maybe spinning forever to wait for _state[] to be true;
                 try

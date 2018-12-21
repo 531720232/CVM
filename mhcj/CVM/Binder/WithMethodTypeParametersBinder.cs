@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         result.Add(typeParameter.Name, typeParameter);
                     }
 
-                    Interlocked.CompareExchange(ref _lazyTypeParameterMap, result, null);
+                    CVM.AHelper.CompareExchange(ref _lazyTypeParameterMap, result, null);
                 }
 
                 return _lazyTypeParameterMap;

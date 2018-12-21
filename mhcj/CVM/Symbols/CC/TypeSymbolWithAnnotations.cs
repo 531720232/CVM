@@ -293,8 +293,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     return false;
                 }
                 _nullableAnnotation = type.NullableAnnotation;
-                Interlocked.CompareExchange(ref _extensions, type._extensions, null);
-                return (object)Interlocked.CompareExchange(ref _defaultType, type._defaultType, null) == null;
+                CVM.AHelper.CompareExchange(ref _extensions, type._extensions, null);
+                return (object)CVM.AHelper.CompareExchange(ref _defaultType, type._defaultType, null) == null;
             }
 
             /// <summary>
@@ -1233,7 +1233,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     }
                     else
                     {
-                        Interlocked.CompareExchange(ref _resolved,
+                        CVM.AHelper.CompareExchange(ref _resolved,
                             _compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(ImmutableArray.Create(_underlying)),
                             null);
                     }

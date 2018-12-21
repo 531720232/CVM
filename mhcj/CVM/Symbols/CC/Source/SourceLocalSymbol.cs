@@ -551,7 +551,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     }
 
                     value = ConstantValueUtils.GetAndValidateConstantValue(boundInitValue, this, type, initValueNodeLocation, diagnostics);
-                    Interlocked.CompareExchange(ref _constantTuple, new EvaluatedConstant(value, diagnostics.ToReadOnlyAndFree()), null);
+                    CVM.AHelper.CompareExchange(ref _constantTuple, new EvaluatedConstant(value, diagnostics.ToReadOnlyAndFree()), null);
                 }
             }
 

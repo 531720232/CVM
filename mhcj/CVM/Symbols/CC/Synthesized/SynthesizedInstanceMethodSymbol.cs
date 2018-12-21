@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if ((object)_lazyThisParameter == null)
             {
-                Interlocked.CompareExchange(ref _lazyThisParameter, new ThisParameterSymbol(this), null);
+                CVM.AHelper.CompareExchange(ref _lazyThisParameter, new ThisParameterSymbol(this), null);
             }
 
             thisParameter = _lazyThisParameter;

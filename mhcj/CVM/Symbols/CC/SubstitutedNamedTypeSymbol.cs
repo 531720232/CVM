@@ -102,7 +102,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // We're creating a new unconstructed Method from another; alpha-rename type parameters.
             var newMap = _inputMap.WithAlphaRename(OriginalDefinition, this, out typeParameters);
 
-            var prevMap = Interlocked.CompareExchange(ref _lazyMap, newMap, null);
+            var prevMap = CVM.AHelper.CompareExchange(ref _lazyMap, newMap, null);
             if (prevMap != null)
             {
                 // There is a race with another thread who has already set the map

@@ -106,7 +106,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         //    Debug.Assert(compilation.Declarations == this);
             if (_mergedRoot == null)
             {
-                Interlocked.CompareExchange(ref _mergedRoot, CalculateMergedRoot(compilation), null);
+                CVM.AHelper.CompareExchange(ref _mergedRoot, CalculateMergedRoot(compilation), null);
             }
             return _mergedRoot;
         }

@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             var switchGoverningDiagnostics = new DiagnosticBag();
             var boundSwitchExpression = BindSwitchExpression(switchGoverningDiagnostics);
             _switchGoverningDiagnostics = switchGoverningDiagnostics;
-            Interlocked.CompareExchange(ref _switchGoverningExpression, boundSwitchExpression, null);
+            CVM.AHelper.CompareExchange(ref _switchGoverningExpression, boundSwitchExpression, null);
         }
 
         // Dictionary for the switch case/default labels.

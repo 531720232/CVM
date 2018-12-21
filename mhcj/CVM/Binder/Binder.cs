@@ -415,7 +415,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 if (_lazyConversions == null)
                 {
-                    Interlocked.CompareExchange(ref _lazyConversions, new Conversions(this), null);
+                    CVM.AHelper.CompareExchange(ref _lazyConversions, new Conversions(this), null);
                 }
 
                 return _lazyConversions;
@@ -429,7 +429,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 if (_lazyOverloadResolution == null)
                 {
-                    Interlocked.CompareExchange(ref _lazyOverloadResolution, new OverloadResolution(this), null);
+                    CVM.AHelper.CompareExchange(ref _lazyOverloadResolution, new OverloadResolution(this), null);
                 }
 
                 return _lazyOverloadResolution;

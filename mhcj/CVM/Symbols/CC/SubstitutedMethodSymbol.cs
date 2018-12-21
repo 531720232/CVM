@@ -107,7 +107,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // We're creating a new unconstructed Method from another; alpha-rename type parameters.
             var newMap = _inputMap.WithAlphaRename(this.OriginalDefinition, this, out typeParameters);
 
-            var prevMap = Interlocked.CompareExchange(ref _lazyMap, newMap, null);
+            var prevMap = CVM.AHelper.CompareExchange(ref _lazyMap, newMap, null);
             if (prevMap != null)
             {
                 // There is a race with another thread who has already set the map
@@ -295,7 +295,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     // We need to compute the overridden or hidden members for this type, rather than applying
                     // our type map to those of the underlying type, because the substitution may have introduced
                     // ambiguities.
-                    Interlocked.CompareExchange(ref _lazyOverriddenOrHiddenMembers, this.MakeOverriddenOrHiddenMembers(), null);
+                    CVM.AHelper.CompareExchange(ref _lazyOverriddenOrHiddenMembers, this.MakeOverriddenOrHiddenMembers(), null);
                 }
                 return _lazyOverriddenOrHiddenMembers;
             }

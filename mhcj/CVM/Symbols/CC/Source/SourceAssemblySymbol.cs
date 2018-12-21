@@ -193,7 +193,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get
             {
                 if (lazyAssemblyIdentity == null)
-                    Interlocked.CompareExchange(ref lazyAssemblyIdentity, ComputeIdentity(), null);
+                    CVM.AHelper.CompareExchange(ref lazyAssemblyIdentity, ComputeIdentity(), null);
 
                 return lazyAssemblyIdentity;
             }
@@ -455,7 +455,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     try
                     {
                         t_assemblyForWhichCurrentThreadIsComputingKeys = this;
-                        Interlocked.CompareExchange(ref _lazyStrongNameKeys, ComputeStrongNameKeys(), null);
+                        CVM.AHelper.CompareExchange(ref _lazyStrongNameKeys, ComputeStrongNameKeys(), null);
                     }
                     finally
                     {
@@ -1095,7 +1095,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (_lazyOmittedAttributeIndices == null)
             {
-                Interlocked.CompareExchange(ref _lazyOmittedAttributeIndices, new ConcurrentSet<int>(), null);
+                CVM.AHelper.CompareExchange(ref _lazyOmittedAttributeIndices, new ConcurrentSet<int>(), null);
             }
 
             _lazyOmittedAttributeIndices.Add(index);
@@ -1326,7 +1326,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     netModuleAttributesBag = CustomAttributesBag<CSharpAttributeData>.Empty;
                 }
 
-                if (Interlocked.CompareExchange(ref lazyNetModuleAttributesBag, netModuleAttributesBag, null) == null)
+                if (CVM.AHelper.CompareExchange(ref lazyNetModuleAttributesBag, netModuleAttributesBag, null) == null)
                 {
                     this.AddDeclarationDiagnostics(diagnostics);
                 }
@@ -1858,7 +1858,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     if (!potentialGiverOfAccess.GetInternalsVisibleToPublicKeys(this.Name).IsEmpty())
                     {
                         if (_optimisticallyGrantedInternalsAccess == null)
-                            Interlocked.CompareExchange(ref _optimisticallyGrantedInternalsAccess, new ConcurrentDictionary<AssemblySymbol, bool>(), null);
+                            CVM.AHelper.CompareExchange(ref _optimisticallyGrantedInternalsAccess, new ConcurrentDictionary<AssemblySymbol, bool>(), null);
 
                         _optimisticallyGrantedInternalsAccess.TryAdd(potentialGiverOfAccess, true);
                         return true;
@@ -1999,7 +1999,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             if (lazyInternalsVisibleToMap == null)
             {
-                Interlocked.CompareExchange(ref lazyInternalsVisibleToMap,
+                CVM.AHelper.CompareExchange(ref lazyInternalsVisibleToMap,
                                             new ConcurrentDictionary<string, ConcurrentDictionary<ImmutableArray<byte>, Tuple2<Location, String>>>(StringComparer.OrdinalIgnoreCase), null);
             }
 

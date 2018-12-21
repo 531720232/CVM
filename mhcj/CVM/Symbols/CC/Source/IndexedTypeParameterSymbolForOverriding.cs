@@ -79,7 +79,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     newPool[i] = new IndexedTypeParameterSymbolForOverriding(i, hasValueTypeConstraint);
                 }
 
-                Interlocked.CompareExchange(ref parameterPool, newPool, initialPool);
+                CVM.AHelper.CompareExchange(ref parameterPool, newPool, initialPool);
 
                 // repeat if race condition occurred and someone else resized the pool before us
                 // and the new pool is still too small

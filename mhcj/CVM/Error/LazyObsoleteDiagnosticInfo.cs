@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 // If this symbol is not obsolete or is in an obsolete context, we don't want to report any diagnostics.
                 // Therefore make this a Void diagnostic.
-                Interlocked.CompareExchange(ref _lazyActualObsoleteDiagnostic, info ?? CSDiagnosticInfo.VoidDiagnosticInfo, null);
+                CVM.AHelper.CompareExchange(ref _lazyActualObsoleteDiagnostic, info ?? CSDiagnosticInfo.VoidDiagnosticInfo, null);
             }
 
             return _lazyActualObsoleteDiagnostic;

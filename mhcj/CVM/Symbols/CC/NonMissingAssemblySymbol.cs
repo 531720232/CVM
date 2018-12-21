@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     var result = MergedNamespaceSymbol.Create(new NamespaceExtent(this),
                                                         null,
                                                         allGlobalNamespaces.AsImmutable());
-                    Interlocked.CompareExchange(ref _globalNamespace, result, null);
+                    CVM.AHelper.CompareExchange(ref _globalNamespace, result, null);
                 }
 
                 return _globalNamespace;

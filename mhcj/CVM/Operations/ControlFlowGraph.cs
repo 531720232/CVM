@@ -251,7 +251,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis
 
             if (_lazyLocalFunctionsGraphs == null)
             {
-                Interlocked.CompareExchange(ref _lazyLocalFunctionsGraphs, new ControlFlowGraph[LocalFunctions.Length], null);
+                CVM.AHelper.CompareExchange(ref _lazyLocalFunctionsGraphs, new ControlFlowGraph[LocalFunctions.Length], null);
             }
 
             if (_lazyLocalFunctionsGraphs[info.Item3] == null)
@@ -259,7 +259,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis
                 Debug.Assert(localFunction == info.Item2.Symbol);
                 ControlFlowGraph graph = ControlFlowGraphBuilder.Create(info.Item2, this, info.Item1, _captureIdDispenser);
                 Debug.Assert(graph.OriginalOperation == info.Item2);
-                Interlocked.CompareExchange(ref _lazyLocalFunctionsGraphs[info.Item3], graph, null);
+                CVM.AHelper.CompareExchange(ref _lazyLocalFunctionsGraphs[info.Item3], graph, null);
             }
 
             controlFlowGraph = _lazyLocalFunctionsGraphs[info.Item3];
@@ -297,7 +297,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis
 
             if (_lazyAnonymousFunctionsGraphs == null)
             {
-                Interlocked.CompareExchange(ref _lazyAnonymousFunctionsGraphs, new ControlFlowGraph[_anonymousFunctionsMap.Count], null);
+                CVM.AHelper.CompareExchange(ref _lazyAnonymousFunctionsGraphs, new ControlFlowGraph[_anonymousFunctionsMap.Count], null);
             }
 
             if (_lazyAnonymousFunctionsGraphs[info.Item2] == null)
@@ -305,7 +305,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis
                 var anonymous = (FlowAnonymousFunctionOperation)anonymousFunction;
                 ControlFlowGraph graph = ControlFlowGraphBuilder.Create(anonymous.Original, this, info.Item1, _captureIdDispenser, in anonymous.Context);
                 Debug.Assert(graph.OriginalOperation == anonymous.Original);
-                Interlocked.CompareExchange(ref _lazyAnonymousFunctionsGraphs[info.Item2], graph, null);
+                CVM.AHelper.CompareExchange(ref _lazyAnonymousFunctionsGraphs[info.Item2], graph, null);
             }
 
             controlFlowGraph = _lazyAnonymousFunctionsGraphs[info.Item2];

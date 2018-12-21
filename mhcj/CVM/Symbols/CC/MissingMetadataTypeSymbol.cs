@@ -237,7 +237,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             }
                         }
 
-                        Interlocked.CompareExchange(ref _lazyContainingNamespace, container, null);
+                        CVM.AHelper.CompareExchange(ref _lazyContainingNamespace, container, null);
                     }
 
                     return _lazyContainingNamespace;
@@ -261,7 +261,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                             typeId = SpecialTypes.GetTypeFromMetadataName(emittedName);
                         }
 
-                        Interlocked.CompareExchange(ref _lazyTypeId, (int)typeId, -1);
+                        CVM.AHelper.CompareExchange(ref _lazyTypeId, (int)typeId, -1);
                     }
 
                     return _lazyTypeId;

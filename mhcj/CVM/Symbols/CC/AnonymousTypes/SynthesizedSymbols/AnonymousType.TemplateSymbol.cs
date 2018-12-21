@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
                 set
                 {
-                    var oldValue = Interlocked.CompareExchange(ref _nameAndIndex, value, null);
+                    var oldValue = CVM.AHelper.CompareExchange(ref _nameAndIndex, value, null);
                     Debug.Assert(oldValue == null ||
                         ((oldValue.Name == value.Name) && (oldValue.Index == value.Index)));
                 }
@@ -188,7 +188,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         return;
                     }
 
-                    if (ReferenceEquals(Interlocked.CompareExchange(ref _smallestLocation, location, currentSmallestLocation), currentSmallestLocation))
+                    if (ReferenceEquals(CVM.AHelper.CompareExchange(ref _smallestLocation, location, currentSmallestLocation), currentSmallestLocation))
                     {
                         // Changed successfully, proceed to updating the fields
                         return;

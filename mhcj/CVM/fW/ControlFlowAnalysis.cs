@@ -111,8 +111,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 startIsReachable = endIsReachable = true;
             }
-            Interlocked.CompareExchange(ref _regionEndPointIsReachable, endIsReachable, null);
-            Interlocked.CompareExchange(ref _regionStartPointIsReachable, startIsReachable, null);
+            CVM.AHelper.CompareExchange(ref _regionEndPointIsReachable, endIsReachable, null);
+            CVM.AHelper.CompareExchange(ref _regionStartPointIsReachable, startIsReachable, null);
         }
 
         /// <summary>

@@ -333,7 +333,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                         return CyclicInheritanceError(this, acyclicBase);
                     }
 
-                    Interlocked.CompareExchange(ref _lazyBaseType, acyclicBase, ErrorTypeSymbol.UnknownResultType);
+                    CVM.AHelper.CompareExchange(ref _lazyBaseType, acyclicBase, ErrorTypeSymbol.UnknownResultType);
                 }
 
                 return _lazyBaseType;
@@ -371,7 +371,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
             {
                 var underlyingBase = _underlyingType.GetDeclaredBaseType(basesBeingResolved);
                 var declaredBase = (object)underlyingBase != null ? this.RetargetingTranslator.Retarget(underlyingBase, RetargetOptions.RetargetPrimitiveTypesByName) : null;
-                Interlocked.CompareExchange(ref _lazyDeclaredBaseType, declaredBase, ErrorTypeSymbol.UnknownResultType);
+                CVM.AHelper.CompareExchange(ref _lazyDeclaredBaseType, declaredBase, ErrorTypeSymbol.UnknownResultType);
             }
 
             return _lazyDeclaredBaseType;

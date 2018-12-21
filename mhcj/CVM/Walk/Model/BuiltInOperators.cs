@@ -205,7 +205,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                     ImmutableArray<UnaryOperatorSignature>.Empty,
                 };
 
-                Interlocked.CompareExchange(ref _builtInUnaryOperators, allOperators, null);
+                CVM.AHelper.CompareExchange(ref _builtInUnaryOperators, allOperators, null);
             }
 
             operators.AddRange(_builtInUnaryOperators[kind.OperatorIndex()]);
@@ -542,7 +542,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 var allOperators = new[] { nonLogicalOperators, logicalOperators };
 
-                Interlocked.CompareExchange(ref _builtInOperators, allOperators, null);
+                CVM.AHelper.CompareExchange(ref _builtInOperators, allOperators, null);
             }
 
             operators.AddRange(_builtInOperators[kind.IsLogical() ? 1 : 0][kind.OperatorIndex()]);

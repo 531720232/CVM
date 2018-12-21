@@ -120,7 +120,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     }
 
                     // Winner writes diagnostics.
-                    if (Interlocked.CompareExchange(ref _fixedSize, size, FixedSizeNotInitialized) == FixedSizeNotInitialized)
+                    if (CVM.AHelper.CompareExchange(ref _fixedSize, size, FixedSizeNotInitialized) == FixedSizeNotInitialized)
                     {
                         this.AddDeclarationDiagnostics(diagnostics);
                         state.NotePartComplete(CompletionPart.FixedSize);

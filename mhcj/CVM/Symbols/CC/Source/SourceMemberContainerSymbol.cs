@@ -1109,7 +1109,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             if (_lazyTypeMembers == null)
             {
                 var diagnostics = DiagnosticBag.GetInstance();
-                if (Interlocked.CompareExchange(ref _lazyTypeMembers, MakeTypeMembers(diagnostics), null) == null)
+                if (CVM.AHelper.CompareExchange(ref _lazyTypeMembers, MakeTypeMembers(diagnostics), null) == null)
                 {
                     AddDeclarationDiagnostics(diagnostics);
 
@@ -1312,7 +1312,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 var membersByName = membersAndInitializers.NonTypeNonIndexerMembers.ToDictionary(s => s.Name);
                 AddNestedTypesToDictionary(membersByName, GetTypeMembersDictionary());
 
-                Interlocked.CompareExchange(ref _lazyEarlyAttributeDecodingMembersDictionary, membersByName, null);
+                CVM.AHelper.CompareExchange(ref _lazyEarlyAttributeDecodingMembersDictionary, membersByName, null);
             }
 
             return _lazyEarlyAttributeDecodingMembersDictionary;
@@ -1333,7 +1333,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var diagnostics = DiagnosticBag.GetInstance();
             membersAndInitializers = BuildMembersAndInitializers(diagnostics);
 
-            var alreadyKnown = Interlocked.CompareExchange(ref _lazyMembersAndInitializers, membersAndInitializers, null);
+            var alreadyKnown = CVM.AHelper.CompareExchange(ref _lazyMembersAndInitializers, membersAndInitializers, null);
             if (alreadyKnown != null)
             {
                 diagnostics.Free();
@@ -1362,7 +1362,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 var diagnostics = DiagnosticBag.GetInstance();
                 var membersDictionary = MakeAllMembers(diagnostics);
-                if (Interlocked.CompareExchange(ref _lazyMembersDictionary, membersDictionary, null) == null)
+                if (CVM.AHelper.CompareExchange(ref _lazyMembersDictionary, membersDictionary, null) == null)
                 {
                     var memberNames = ArrayBuilder<string>.GetInstance(membersDictionary.Count);
                     memberNames.AddRange(membersDictionary.Keys);
@@ -1835,14 +1835,14 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     if (TypeKind != TypeKind.Struct)
                     {
-                        Interlocked.CompareExchange(ref _lazyKnownCircularStruct, (int)ThreeState.False, (int)ThreeState.Unknown);
+                        CVM.AHelper.CompareExchange(ref _lazyKnownCircularStruct, (int)ThreeState.False, (int)ThreeState.Unknown);
                     }
                     else
                     {
                         var diagnostics = DiagnosticBag.GetInstance();
                         var value = (int)CheckStructCircularity(diagnostics).ToThreeState();
 
-                        if (Interlocked.CompareExchange(ref _lazyKnownCircularStruct, value, (int)ThreeState.Unknown) == (int)ThreeState.Unknown)
+                        if (CVM.AHelper.CompareExchange(ref _lazyKnownCircularStruct, value, (int)ThreeState.Unknown) == (int)ThreeState.Unknown)
                         {
                             AddDeclarationDiagnostics(diagnostics);
                         }

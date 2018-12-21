@@ -24,6 +24,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             this.em = em;
             this.gen = gen;
             this.arity = arity;
+            
         }
 
         public override int Arity => arity;

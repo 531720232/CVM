@@ -296,7 +296,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             set
             {
                 Debug.Assert((object)_iteratorElementType == null || _iteratorElementType == value);
-                Interlocked.CompareExchange(ref _iteratorElementType, value, null);
+                CVM.AHelper.CompareExchange(ref _iteratorElementType, value, null);
             }
         }
 

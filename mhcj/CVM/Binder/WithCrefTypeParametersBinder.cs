@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 if (_lazyTypeParameterMap == null)
                 {
                     MultiDictionary<string, TypeParameterSymbol> map = CreateTypeParameterMap();
-                    Interlocked.CompareExchange(ref _lazyTypeParameterMap, map, null);
+                    CVM.AHelper.CompareExchange(ref _lazyTypeParameterMap, map, null);
                 }
 
                 return _lazyTypeParameterMap;

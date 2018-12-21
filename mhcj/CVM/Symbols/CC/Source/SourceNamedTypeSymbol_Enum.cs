@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if (ReferenceEquals(_lazyEnumUnderlyingType, ErrorTypeSymbol.UnknownResultType))
                 {
                     DiagnosticBag diagnostics = DiagnosticBag.GetInstance();
-                    if ((object)Interlocked.CompareExchange(ref _lazyEnumUnderlyingType, this.GetEnumUnderlyingType(diagnostics), ErrorTypeSymbol.UnknownResultType) ==
+                    if ((object)CVM.AHelper.CompareExchange(ref _lazyEnumUnderlyingType, this.GetEnumUnderlyingType(diagnostics), ErrorTypeSymbol.UnknownResultType) ==
                         (object)ErrorTypeSymbol.UnknownResultType)
                     {
                         AddDeclarationDiagnostics(diagnostics);
@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if ((object)_lazyEnumValueField == null)
                 {
                     Debug.Assert((object)this.EnumUnderlyingType != null);
-                    Interlocked.CompareExchange(ref _lazyEnumValueField, new SynthesizedEnumValueFieldSymbol(this), null);
+                    CVM.AHelper.CompareExchange(ref _lazyEnumValueField, new SynthesizedEnumValueFieldSymbol(this), null);
                 }
 
                 return _lazyEnumValueField;

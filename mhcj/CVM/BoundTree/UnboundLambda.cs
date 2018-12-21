@@ -759,7 +759,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             if (_errorBinding == null)
             {
-                Interlocked.CompareExchange(ref _errorBinding, ReallyBindForErrorRecovery(), null);
+                CVM.AHelper.CompareExchange(ref _errorBinding, ReallyBindForErrorRecovery(), null);
             }
 
             return _errorBinding;
