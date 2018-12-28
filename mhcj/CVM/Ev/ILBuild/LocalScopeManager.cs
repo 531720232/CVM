@@ -452,15 +452,33 @@ namespace Microsoft.CodeAnalysis.CodeGen
                 // we are not interested in scopes with no variables or no code in them.
                 if ((_localVariables != null || _localConstants != null) && end > begin)
                 {
-
-                    var lc = new ImmutableArray<Cci.ILocalDefinition>(_localConstants.ToArray());// ImmutableArrayExtensions1.AsImmutableOrEmpty(_localConstants);//.AsImmutableOrEmpty<Cci.ILocalDefinition>();
-                    var lc2 = new ImmutableArray<Cci.ILocalDefinition>(_localVariables.ToArray());
+                    var g1 = ImmutableArray<Cci.ILocalDefinition>.Empty;
+                    var g1_b = g1.ToBuilder();
+                    if (_localConstants != null)
+                    {
+                        foreach (var _g1 in _localConstants)
+                        {
+                            g1_b.Add(_g1);
+                        }
+                    }
+                    var g2 = ImmutableArray<Cci.ILocalDefinition>.Empty;
+                    var g2_b = g2.ToBuilder();
+                    if (_localVariables != null)
+                    {
+                        foreach (var _g2 in _localVariables)
+                        {
+                            g2_b.Add(_g2);
+                        }
+                    }
+                    //    var lc = new ImmutableArray<Cci.ILocalDefinition>(_localConstants.ToArray());// ImmutableArrayExtensions1.AsImmutableOrEmpty(_localConstants);//.AsImmutableOrEmpty<Cci.ILocalDefinition>();
+                    //  var lc2 = new ImmutableArray<Cci.ILocalDefinition>(_localVariables.ToArray());
                     var newScope = new Cci.LocalScope(
-                        begin,
-                        end,
-                        lc,
-                       lc2);
-
+                            begin,
+                            end,
+                                g1_b.ToImmutableArray(),
+                           g2_b.ToImmutableArray());
+                    
+                 
                     result.Add(newScope);
                 }
 

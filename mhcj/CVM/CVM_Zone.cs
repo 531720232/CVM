@@ -854,6 +854,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             // to honor the compiler options (e.g., /nowarn, /warnaserror and /warn) and the pragmas.
             FilterAndAppendAndFreeDiagnostics(diagnostics, ref builder);
         }
+
+
         internal  bool CompileMethods(
         CommonPEModuleBuilder moduleBuilder,
      
@@ -894,7 +896,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                      methodBodyDiagnosticBag,
                      s1,
                      cancellationToken);
-
+                
                 bool hasMethodBodyErrorOrWarningAsError = !FilterAndAppendAndFreeDiagnostics(diagnostics, ref methodBodyDiagnosticBag);
 
                 if (hasDeclarationErrors || hasMethodBodyErrorOrWarningAsError)
@@ -1947,18 +1949,31 @@ namespace Microsoft.CodeAnalysis.CSharp
       
         public void builder()
         {
-       //     var sw = SourceAssembly;
-       //     var me = MetadataTypeName.FromFullName("a111.fyindex",false,0);
-       // var gw=    sw.GetTopLevelTypeByMetadataName(ref me,SourceAssembly.Identity,false,false,out Tuple2<AssemblySymbol,AssemblySymbol> ww);
+          var sw = SourceAssembly;
+            var me = MetadataTypeName.FromFullName("System.String", false,0);
+            //   var gw=  sw.GetTopLevelTypeByMetadataName(ref me,SourceAssembly.Identity,true,false,out Tuple2<AssemblySymbol,AssemblySymbol> ww);
+
+      //      var t1 = GetSpecialType(SpecialType.System_Int32);
+      //var tg=      GetWellKnownType(WellKnownType.System_Collections_ObjectModel_Collection_T);
+
+        var a1sd=    SourceAssembly.CorLibrary.GetTypeByMetadataName(typeof(System.String).FullName);
+           // var t2 = t1.GetMembersUnordered();
 
        //var arrs=    gw.GetMembers().ToArray();
        //     var wr1 = arrs[0];
        //     var wrt1 = wr1.GetAttributes();
        //     var d = Declarations;
            var c = CreateModuleBuilder(EmitOptions.Default, this.diag, default);
+         
+     
 
-          var we=  CompileMethods(c, diag, default, default);
-      
+
+            
+          var we= CompileMethods(c, diag, default, default);
+
+            var md = SourceAssembly.GetTypeByMetadataName("a111.fyindex");
+            var ms =(IMethodSymbol) md.GetMembers("Abv")[0];
+            var mb = c.GetMethodBody(ms);
             //var asw = new ToAster(this,tree);
          //  asw.Start();
      //       var tree1 = DeclarationTreeBuilder.ForTree(tree, "", true);

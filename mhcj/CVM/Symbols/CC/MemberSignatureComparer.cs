@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     /// consistent.
     /// </para>
     /// </summary>
-    internal class MemberSignatureComparer : IEqualityComparer<Symbol>
+    internal class MemberSignatureComparer<T> : IEqualityComparer<T> where T:Symbol
     {
         /// <summary>
         /// This instance is used when trying to determine if one member explicitly implements another,
@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// The member signatures are compared without regard to name (including the interface part, if any)
         /// and the return types must match.
         /// </summary>
-        public static readonly MemberSignatureComparer ExplicitImplementationComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> ExplicitImplementationComparer = new MemberSignatureComparer<T>(
             considerName: false,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <summary>
         /// Same as <see cref="ExplicitImplementationComparer"/> except that it specially treats nullable types.  
         /// </summary>
-        public static readonly MemberSignatureComparer ExplicitImplementationLookupComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> ExplicitImplementationLookupComparer = new MemberSignatureComparer<T>(
             considerName: false,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -72,7 +72,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// In this scenario, we want to compare I.M to MT.M without regard to custom modifiers, because if C1 != C2,
         /// we can just synthesize an explicit implementation of I.M in ST that calls MT.M.
         /// </remarks>
-        public static readonly MemberSignatureComparer CSharpImplicitImplementationComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpImplicitImplementationComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: true,
             considerReturnType: true,
@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// another. It applies a looser check to determine whether the proposed implementation should be reported
         /// as "close".
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpCloseImplicitImplementationComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpCloseImplicitImplementationComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: true,
             considerReturnType: false,
@@ -103,7 +103,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <remarks>
         /// This does the same comparison that MethodSignature used to do.
         /// </remarks>
-        public static readonly MemberSignatureComparer DuplicateSourceComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> DuplicateSourceComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: true,
             considerReturnType: false,
@@ -116,7 +116,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This instance is used to determine if a partial method implementation matches the definition.
         /// It is the same as <see cref="DuplicateSourceComparer"/> except it considers ref kinds as well.
         /// </summary>
-        public static readonly MemberSignatureComparer PartialMethodsComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> PartialMethodsComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: true,
             considerReturnType: false,
@@ -128,7 +128,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <summary>
         /// This instance is used to check whether one member overrides another, according to the C# definition.
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpOverrideComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpOverrideComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: false,
@@ -140,7 +140,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <summary>
         /// Same as <see cref="CSharpOverrideComparer"/> except that it specially treats nullable types.  
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpNullableOverrideComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpNullableOverrideComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: false,
@@ -154,7 +154,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This instance checks whether two signatures match including tuples names, in both return type and parameters.
         /// It is used to detect tuple-name-only differences.
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpWithTupleNamesComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpWithTupleNamesComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -167,7 +167,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This instance checks whether two signatures match excluding tuples names, in both return type and parameters.
         /// It is used to detect tuple-name-only differences.
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpWithoutTupleNamesComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpWithoutTupleNamesComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -181,7 +181,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <para>NOTE: C# ignores accessor member names.</para>
         /// <para>CAVEAT: considers return types so that getters and setters will be treated the same.</para>
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpAccessorOverrideComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpAccessorOverrideComparer = new MemberSignatureComparer<T>(
             considerName: false,
             considerExplicitlyImplementedInterfaces: false, //Bug: DevDiv #15775
             considerReturnType: true,
@@ -195,7 +195,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// Normally, the return type isn't considered during overriding, but this comparer is actually used to find
         /// exact matches (i.e. before tie-breaking takes place amongst close matches).
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpCustomModifierOverrideComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpCustomModifierOverrideComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -207,7 +207,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <summary>
         /// Same as <see cref="CSharpCustomModifierOverrideComparer"/> except that it specially treats nullable types.  
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpCustomModifierNullableOverrideComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpCustomModifierNullableOverrideComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -221,7 +221,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// If this returns false, then the real override comparer (whichever one is appropriate for the scenario)
         /// will also return false.
         /// </summary>
-        internal static readonly MemberSignatureComparer SloppyOverrideComparer = new MemberSignatureComparer(
+        internal static readonly MemberSignatureComparer<T> SloppyOverrideComparer = new MemberSignatureComparer<T>(
             considerName: false,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: false,
@@ -236,7 +236,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// It considers return type, name, parameters, calling convention, and custom modifiers, but ignores
         /// the difference between <see cref="RefKind.Out"/> and <see cref="RefKind.Ref"/>.
         /// </summary>
-        public static readonly MemberSignatureComparer RuntimeSignatureComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> RuntimeSignatureComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -250,7 +250,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// if we find two methods that match except for <c>ref</c>/<c>out</c>, we want to prefer the one that matches, even
         /// if the runtime doesn't.
         /// </summary>
-        public static readonly MemberSignatureComparer RuntimePlusRefOutSignatureComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> RuntimePlusRefOutSignatureComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: true,
@@ -263,7 +263,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This instance is the same as RuntimeSignatureComparer.
         /// CONSIDER: just use RuntimeSignatureComparer?
         /// </summary>
-        public static readonly MemberSignatureComparer RuntimeImplicitImplementationComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> RuntimeImplicitImplementationComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: true,
             considerReturnType: true,
@@ -277,7 +277,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This instance is used to search for members that have the same name, parameters, (return) type, and constraints (if any)
         /// according to the C# definition. Custom modifiers are ignored.
         /// </summary>
-        public static readonly MemberSignatureComparer CSharpSignatureAndConstraintsAndReturnTypeComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CSharpSignatureAndConstraintsAndReturnTypeComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: true,
             considerReturnType: true,
@@ -289,7 +289,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// <summary>
         /// This instance is used to search for members that have identical signatures in every regard.
         /// </summary>
-        public static readonly MemberSignatureComparer RetargetedExplicitImplementationComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> RetargetedExplicitImplementationComparer = new MemberSignatureComparer<T>(
             considerName: true,
             considerExplicitlyImplementedInterfaces: false, //we'll be comparing interface members anyway
             considerReturnType: true,
@@ -302,7 +302,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// This instance is used for performing approximate overload resolution of documentation
         /// comment <c>cref</c> attributes. It ignores the name, because the candidates were all found by lookup.
         /// </summary>
-        public static readonly MemberSignatureComparer CrefComparer = new MemberSignatureComparer(
+        public static readonly MemberSignatureComparer<T> CrefComparer = new MemberSignatureComparer<T>(
             considerName: false, //handled by lookup
             considerExplicitlyImplementedInterfaces: false,
             considerReturnType: false,
@@ -358,7 +358,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         #region IEqualityComparer<Symbol> Members
 
-        public bool Equals(Symbol member1, Symbol member2)
+        public bool Equals(T member1, T member2)
         {
             if (ReferenceEquals(member1, member2))
             {
@@ -498,7 +498,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             return !_considerTypeConstraints || HaveSameConstraints(member1, typeMap1, member2, typeMap2);
         }
 
-        public int GetHashCode(Symbol member)
+        public int GetHashCode(T member)
         {
             int hash = 1;
             if ((object)member != null)
@@ -825,8 +825,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         /// </summary>
         internal static bool ConsideringTupleNamesCreatesDifference(Symbol member1, Symbol member2)
         {
-            return !CSharpWithTupleNamesComparer.Equals(member1, member2) &&
-                CSharpWithoutTupleNamesComparer.Equals(member1, member2);
+            return !MemberSignatureComparer<Symbol>.CSharpWithTupleNamesComparer.Equals(member1, member2) &&
+                MemberSignatureComparer<Symbol>.CSharpWithoutTupleNamesComparer.Equals(member1, member2);
         }
     }
 }

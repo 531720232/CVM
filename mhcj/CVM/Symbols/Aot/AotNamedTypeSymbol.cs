@@ -16,18 +16,57 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
     /// </summary>
     internal abstract class AotNamedTypeSymbol : NamedTypeSymbol
     {
+        internal string DefaultMemberName
+        {
+            get
+            {
+                var uncommon = GetUncommonProperties();
+                if (uncommon == s_noUncommonProperties)
+                {
+                    return "";
+                }
+
+                if (uncommon.lazyDefaultMemberName == null)
+                {
+                    string defaultMemberName;
+                   
+                    this.ContainingAotModule.HasDefaultMemberAttribute(_handle, out defaultMemberName);
+
+                    // NOTE: the default member name is frequently null (e.g. if there is not indexer in the type).
+                    // Make sure we set a non-null value so that we don't recompute it repeatedly.
+                    // CONSIDER: this makes it impossible to distinguish between not having the attribute and
+                    // having the attribute with a value of "".
+                    CVM.AHelper.CompareExchange(ref uncommon.lazyDefaultMemberName, defaultMemberName ?? "", null);
+                }
+                return uncommon.lazyDefaultMemberName;
+            }
+        }
         private static readonly Dictionary<string, ImmutableArray<AotNamedTypeSymbol>> s_emptyNestedTypes = new Dictionary<string, ImmutableArray<AotNamedTypeSymbol>>();
 
         public override Symbol ContainingSymbol => _container;
 
-        private readonly NamespaceOrTypeSymbol _container;
+        internal override ObsoleteAttributeData ObsoleteAttributeData
+        {
+            get
+            {
+                foreach(ObsoleteAttribute v in Handle.GetCustomAttributes(typeof(ObsoleteAttribute),false))
+                {
+                    var ob=new ObsoleteAttributeData(ObsoleteAttributeKind.Obsolete, v.Message, v.IsError);
+                    return ob;
+                }
+
+                return default;
+            }
+        }
+
+        protected internal readonly NamespaceOrTypeSymbol _container;
         private readonly Type _handle;
         private readonly string _name;
         private readonly TypeAttributes _flags;
         private readonly SpecialType _corTypeId;
         private ICollection<string> _lazyMemberNames;
         private ImmutableArray<Symbol> _lazyMembersInDeclarationOrder;
-        private Dictionary<string, ImmutableArray<Symbol>> _lazyMembersByName;
+        internal Dictionary<string, ImmutableArray<Symbol>> _lazyMembersByName;
         private Dictionary<string, ImmutableArray<AotNamedTypeSymbol>> _lazyNestedTypes;
         private TypeKind _lazyKind;
         private NamedTypeSymbol _lazyBaseType = ErrorTypeSymbol.UnknownResultType;
@@ -38,10 +77,527 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override NamedTypeSymbol ConstructedFrom => this;
 
+        private bool IsUncommon()
+        {
+            if ((_handle).GetCustomAttributes(false).Length>0)
+            {
+                return true;
+            }
+
+            if (this.TypeKind == TypeKind.Enum)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        internal class UncommonProperties
+        {
+            /// <summary>
+            /// Need to import them for an enum from a linked assembly, when we are embedding it. These symbols are not included into lazyMembersInDeclarationOrder.  
+            /// </summary>
+            internal ImmutableArray<AotFieldSymbol> lazyInstanceEnumFields;
+            internal NamedTypeSymbol lazyEnumUnderlyingType;
+
+            // CONSIDER: Should we use a CustomAttributeBag for PE symbols?
+            internal ImmutableArray<CSharpAttributeData> lazyCustomAttributes;
+            internal ImmutableArray<string> lazyConditionalAttributeSymbols;
+            internal ObsoleteAttributeData lazyObsoleteAttributeData = ObsoleteAttributeData.Uninitialized;
+            internal AttributeUsageInfo lazyAttributeUsageInfo = AttributeUsageInfo.Null;
+            internal ThreeState lazyContainsExtensionMethods;
+            internal ThreeState lazyIsByRefLike;
+            internal ThreeState lazyIsReadOnly;
+            internal string lazyDefaultMemberName;
+            internal NamedTypeSymbol lazyComImportCoClassType = ErrorTypeSymbol.UnknownResultType;
+            internal ThreeState lazyHasEmbeddedAttribute = ThreeState.Unknown;
+
+            internal bool IsDefaultValue()
+            {
+                return lazyInstanceEnumFields.IsDefault &&
+                    (object)lazyEnumUnderlyingType == null &&
+                    lazyCustomAttributes.IsDefault &&
+                    lazyConditionalAttributeSymbols.IsDefault &&
+                    lazyObsoleteAttributeData == ObsoleteAttributeData.Uninitialized &&
+                    lazyAttributeUsageInfo.IsNull &&
+                    !lazyContainsExtensionMethods.HasValue() &&
+                    lazyDefaultMemberName == null &&
+                    (object)lazyComImportCoClassType == (object)ErrorTypeSymbol.UnknownResultType &&
+                    !lazyHasEmbeddedAttribute.HasValue();
+            }
+        }
+
+        private UncommonProperties _lazyUncommonProperties;
+        private static readonly UncommonProperties s_noUncommonProperties = new UncommonProperties();
+
+        private UncommonProperties GetUncommonProperties()
+        {
+            var result = _lazyUncommonProperties;
+            if (result != null)
+            {
+                Debug.Assert(result != s_noUncommonProperties || result.IsDefaultValue(), "default value was modified");
+                return result;
+            }
+
+            if (this.IsUncommon())
+            {
+                result = new UncommonProperties();
+                return CVM.AHelper.CompareExchange(ref _lazyUncommonProperties, result, null) ?? result;
+            }
+
+            _lazyUncommonProperties = result = s_noUncommonProperties;
+            return result;
+        }
+        private IEnumerable<FieldSymbol> GetEnumFieldsToEmit()
+        {
+            var uncommon = GetUncommonProperties();
+            if (uncommon == s_noUncommonProperties)
+            {
+                yield break;
+            }
+
+            var moduleSymbol = this.ContainingAotModule;
+            var module = moduleSymbol;
+
+            // Non-static fields of enum types are not imported by default because they are not bindable,
+            // but we need them for NoPia.
+
+            var fieldDefs = ArrayBuilder<FieldInfo>.GetInstance();
+
+            try
+            {
+                foreach (var fieldDef in _handle.GetFields())
+                {
+                    fieldDefs.Add(fieldDef);
+                }
+            }
+            catch (BadImageFormatException)
+            { }
+
+            if (uncommon.lazyInstanceEnumFields.IsDefault)
+            {
+                var builder = ArrayBuilder<AotFieldSymbol>.GetInstance();
+
+                foreach (var fieldDef in fieldDefs)
+                {
+                    try
+                    {
+                        FieldAttributes fieldFlags =fieldDef.Attributes;
+                        if ((fieldFlags & FieldAttributes.Static) == 0)
+                        {
+                            builder.Add(new AotFieldSymbol(moduleSymbol, this, fieldDef));
+                        }
+                    }
+                    catch (BadImageFormatException)
+                    { }
+                }
+
+                ImmutableInterlocked.InterlockedInitialize(ref uncommon.lazyInstanceEnumFields, builder.ToImmutableAndFree());
+            }
+
+            int staticIndex = 0;
+            ImmutableArray<Symbol> staticFields = GetMembers();
+            int instanceIndex = 0;
+
+            foreach (var fieldDef in fieldDefs)
+            {
+                if (instanceIndex < uncommon.lazyInstanceEnumFields.Length && uncommon.lazyInstanceEnumFields[instanceIndex].Handle == fieldDef)
+                {
+                    yield return uncommon.lazyInstanceEnumFields[instanceIndex];
+                    instanceIndex++;
+                    continue;
+                }
+
+                if (staticIndex < staticFields.Length && staticFields[staticIndex].Kind == SymbolKind.Field)
+                {
+                    var field = (AotFieldSymbol)staticFields[staticIndex];
+
+                    if (field.Handle == fieldDef)
+                    {
+                        yield return field;
+                        staticIndex++;
+                        continue;
+                    }
+                }
+            }
+
+            fieldDefs.Free();
+
+            Debug.Assert(instanceIndex == uncommon.lazyInstanceEnumFields.Length);
+            Debug.Assert(staticIndex == staticFields.Length || staticFields[staticIndex].Kind != SymbolKind.Field);
+        }
+        internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
+        {
+            if (this.TypeKind == TypeKind.Enum)
+            {
+                return GetEnumFieldsToEmit();
+            }
+            else
+            {
+                // If there are any non-event fields, they are at the very beginning.
+                IEnumerable<FieldSymbol> nonEventFields = GetMembers<FieldSymbol>(this.GetMembers(), SymbolKind.Field, offset: 0);
+
+                // Event backing fields are not part of the set returned by GetMembers. Let's add them manually.
+                ArrayBuilder<FieldSymbol> eventFields = null;
+
+                foreach (var eventSymbol in GetEventsToEmit())
+                {
+                    FieldSymbol associatedField = eventSymbol.AssociatedField;
+                    if ((object)associatedField != null)
+                    {
+                        Debug.Assert((object)associatedField.AssociatedSymbol != null);
+                        Debug.Assert(!nonEventFields.Contains(associatedField));
+
+                        if (eventFields == null)
+                        {
+                            eventFields = ArrayBuilder<FieldSymbol>.GetInstance();
+                        }
+
+                        eventFields.Add(associatedField);
+                    }
+                }
+
+                if (eventFields == null)
+                {
+                    // Simple case
+                    return nonEventFields;
+                }
+
+                // We need to merge non-event fields with event fields while preserving their relative declaration order
+                var handleToFieldMap = new SmallDictionary<FieldInfo, FieldSymbol>();
+                int count = 0;
+
+                foreach (AotFieldSymbol field in nonEventFields)
+                {
+                    handleToFieldMap.Add(field.Handle, field);
+                    count++;
+                }
+
+                foreach (AotFieldSymbol field in eventFields)
+                {
+                    handleToFieldMap.Add(field.Handle, field);
+                }
+
+                count += eventFields.Count;
+                eventFields.Free();
+
+                var result = ArrayBuilder<FieldSymbol>.GetInstance(count);
+
+                try
+                {
+                    foreach (var handle in (_handle).GetFields())
+                    {
+                        FieldSymbol field;
+                        if (handleToFieldMap.TryGetValue(handle, out field))
+                        {
+                            result.Add(field);
+                        }
+                    }
+                }
+                catch (BadImageFormatException)
+                { }
+
+                Debug.Assert(result.Count == count);
+
+                return result.ToImmutableAndFree();
+            }
+        }
+        private static IEnumerable<TSymbol> GetMembers<TSymbol>(ImmutableArray<Symbol> members, SymbolKind kind, int offset = -1)
+           where TSymbol : Symbol
+        {
+            if (offset < 0)
+            {
+                offset = GetIndexOfFirstMember(members, kind);
+            }
+            int n = members.Length;
+            for (int i = offset; i < n; i++)
+            {
+                var member = members[i];
+                if (member.Kind != kind)
+                {
+                    yield break;
+                }
+                yield return (TSymbol)member;
+            }
+        }
+        private static int GetIndexOfFirstMember(ImmutableArray<Symbol> members, SymbolKind kind)
+        {
+            int n = members.Length;
+            for (int i = 0; i < n; i++)
+            {
+                if (members[i].Kind == kind)
+                {
+                    return i;
+                }
+            }
+            return n;
+        }
+        public override Accessibility DeclaredAccessibility
+        {
+            get
+            {
+                Accessibility access = Accessibility.Private;
+
+                switch (_flags & TypeAttributes.VisibilityMask)
+                {
+                    case TypeAttributes.NestedAssembly:
+                        access = Accessibility.Internal;
+                        break;
+
+                    case TypeAttributes.NestedFamORAssem:
+                        access = Accessibility.ProtectedOrInternal;
+                        break;
+
+                    case TypeAttributes.NestedFamANDAssem:
+                        access = Accessibility.ProtectedAndInternal;
+                        break;
+
+                    case TypeAttributes.NestedPrivate:
+                        access = Accessibility.Private;
+                        break;
+
+                    case TypeAttributes.Public:
+                    case TypeAttributes.NestedPublic:
+                        access = Accessibility.Public;
+                        break;
+
+                    case TypeAttributes.NestedFamily:
+                        access = Accessibility.Protected;
+                        break;
+
+                    case TypeAttributes.NotPublic:
+                        access = Accessibility.Internal;
+                        break;
+
+                    default:
+                        throw ExceptionUtilities.UnexpectedValue(_flags & TypeAttributes.VisibilityMask);
+                }
+
+                return access;
+            }
+        }
+        public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences
+        {
+            get
+            {
+                return ImmutableArray<SyntaxReference>.Empty;
+            }
+        }
+        public override ImmutableArray<Location> Locations
+        {
+            get
+            {
+                return ContainingAotModule.Locations;
+            }
+        }
+        public override IEnumerable<string> MemberNames
+        {
+            get
+            {
+                EnsureNonTypeMemberNamesAreLoaded();
+                return _lazyMemberNames;
+            }
+        }
+        private void EnsureNonTypeMemberNamesAreLoaded()
+        {
+            if (_lazyMemberNames == null)
+            {
+                var moduleSymbol = ContainingAotModule;
+                var module = moduleSymbol;
+
+                var names = new HashSet<string>();
+
+                try
+                {
+                    foreach (var methodDef in (_handle).GetMethods())
+                    {
+                        try
+                        {
+                            names.Add((methodDef).Name);
+                        }
+                        catch 
+                        { }
+                    }
+                }
+                catch 
+                { }
+
+                try
+                {
+                    foreach (var propertyDef in (_handle).GetProperties())
+                    {
+                        try
+                        {
+                            names.Add(propertyDef.Name);
+                        }
+                        catch (BadImageFormatException)
+                        { }
+                    }
+                }
+                catch (BadImageFormatException)
+                { }
+
+                try
+                {
+                    foreach (var eventDef in (_handle).GetEvents())
+                    {
+                        try
+                        {
+                            names.Add((eventDef).Name);
+                        }
+                        catch (BadImageFormatException)
+                        { }
+                    }
+                }
+                catch (BadImageFormatException)
+                { }
+
+                try
+                {
+                    foreach (var fieldDef in (_handle).GetFields())
+                    {
+                        try
+                        {
+                            names.Add(fieldDef.Name);
+                        }
+                        catch (BadImageFormatException)
+                        { }
+                    }
+                }
+                catch (BadImageFormatException)
+                { }
+
+                // From C#'s perspective, structs always have a public constructor
+                // (even if it's not in metadata).  Add it unconditionally and let
+                // the hash set de-dup.
+                if (this.IsValueType)
+                {
+                    names.Add(WellKnownMemberNames.InstanceConstructorName);
+                }
+
+                CVM.AHelper.CompareExchange(ref _lazyMemberNames, CreateReadOnlyMemberNames(names), null);
+            }
+        }
+        internal override IEnumerable<Microsoft.Cci.SecurityAttribute> GetSecurityInformation()
+        {
+            throw ExceptionUtilities.Unreachable;
+        }
+
+        public override ImmutableArray<TypeParameterSymbol> TypeParameters
+        {
+            get
+            {
+                return ImmutableArray<TypeParameterSymbol>.Empty;
+            }
+        }
+        public override bool MightContainExtensionMethods
+        {
+            get
+            {
+                var uncommon = GetUncommonProperties();
+                if (uncommon == s_noUncommonProperties)
+                {
+                    return false;
+                }
+
+                if (!uncommon.lazyContainsExtensionMethods.HasValue())
+                {
+                    var contains = ThreeState.False;
+                    // Dev11 supports extension methods defined on non-static
+                    // classes, structs, delegates, and generic types.
+                    switch (this.TypeKind)
+                    {
+                        case TypeKind.Class:
+                        case TypeKind.Struct:
+                        case TypeKind.Delegate:
+                            var moduleSymbol = this.ContainingAotModule;
+                            var module = moduleSymbol;
+                           
+                            bool moduleHasExtension = _handle.GetCustomAttributes(typeof(System.Runtime.CompilerServices.ExtensionAttribute),false).Length>0;
+
+                            var containingAssembly = this.ContainingAssembly as AotAssemblySymbol;
+                            if ((object)containingAssembly != null)
+                            {
+                                contains = (moduleHasExtension
+                                    && containingAssembly.MightContainExtensionMethods).ToThreeState();
+                            }
+                            else
+                            {
+                                contains = moduleHasExtension.ToThreeState();
+                            }
+                            break;
+                    }
+
+                    uncommon.lazyContainsExtensionMethods = contains;
+                }
+
+                return uncommon.lazyContainsExtensionMethods.Value();
+            }
+        }
+        private static ICollection<string> CreateReadOnlyMemberNames(HashSet<string> names)
+        {
+            switch (names.Count)
+            {
+                case 0:
+                    return SpecializedCollections.EmptySet<string>();
+
+                case 1:
+                    return SpecializedCollections.SingletonCollection(names.First());
+
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                    // PERF: Small collections can be implemented as ImmutableArray.
+                    // While lookup is O(n), when n is small, the memory savings are more valuable.
+                    // Size 6 was chosen because that represented 50% of the names generated in the Picasso end to end.
+                    // This causes boxing, but that's still superior to a wrapped HashSet
+                    return ImmutableArray.CreateRange(names);
+
+                default:
+                    return (names);
+            }
+        }
+
+        internal override AttributeUsageInfo GetAttributeUsageInfo()
+        {
+          
+            var uncommon = GetUncommonProperties();
+            if (uncommon == s_noUncommonProperties)
+            {
+                return ((object)this.BaseTypeNoUseSiteDiagnostics != null) ? this.BaseTypeNoUseSiteDiagnostics.GetAttributeUsageInfo() : AttributeUsageInfo.Default;
+            }
+
+            if (uncommon.lazyAttributeUsageInfo.IsNull)
+            {
+                uncommon.lazyAttributeUsageInfo = this.DecodeAttributeUsageInfo();
+            }
+
+            return uncommon.lazyAttributeUsageInfo;
 
 
+        }
+        private AttributeUsageInfo DecodeAttributeUsageInfo()
+        {
+            var objs = _handle.GetCustomAttributes(typeof(AttributeUsageAttribute), false);
+            foreach(var obj in objs)
+            {
+                if(obj is AttributeUsageAttribute atr)
+                {
+                    AttributeUsageInfo info = new AttributeUsageInfo(atr.ValidOn,atr.AllowMultiple,atr.Inherited);
+                   return info.HasValidAttributeTargets ? info : AttributeUsageInfo.Default;
+                }
+            }
+         
 
-     
+            return ((object)this.BaseTypeNoUseSiteDiagnostics != null) ? this.BaseTypeNoUseSiteDiagnostics.GetAttributeUsageInfo() : AttributeUsageInfo.Default;
+        }
+        internal override ImmutableArray<string> GetAppliedConditionalSymbols()
+        {
+            return ImmutableArray<string>.Empty;
+        }
+
         internal AotModuleSymbol ContainingAotModule
         {
             get
@@ -106,8 +662,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool IsReadOnly => false;
 
-        internal override ObsoleteAttributeData ObsoleteAttributeData => default;
-
+      
         internal override bool IsComImport => (_flags & TypeAttributes.Import) != 0;
 
         internal override bool ShouldAddWinRTMembers
@@ -151,6 +706,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             get { return (_flags & TypeAttributes.Serializable) != 0; }
         }
+       
         internal override TypeLayout Layout { get {
               
                 return La();
@@ -190,12 +746,13 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal static AotNamedTypeSymbol Create(AotModuleSymbol aot, NamespaceOrTypeSymbol ab,Type type,string em)
         {
             var gen = type.GetGenericArguments();
-            var arity = gen.Count();
-
+            var arity = gen.Length;
+            bool m;
+            var nw = type.Name;
             AotNamedTypeSymbol result;
             if (arity == 0)
             {
-                result = new AotNamedTypeSymbolNonGeneric(aot, ab, type, em);
+                result = new AotNamedTypeSymbolNonGeneric(aot, ab, type, em,out m);
             }
             else
             {
@@ -205,7 +762,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     type,
                     em,
                     gen,
-                    arity
+                    arity,out m
                     );
             }
             return result;
@@ -217,6 +774,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
          Type handle,
          string emittedNamespaceName,
          int arity
+            , out bool mangleName
        )
         {
          
@@ -250,27 +808,27 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             if (arity == 0)
             {
                 _name = metadataName;
-            //    mangleName = false;
+                mangleName = false;
             }
             else
             {
                 // Unmangle name for a generic type.
                 _name = MetadataHelpers.UnmangleMetadataNameForArity(metadataName, arity);
-         //       Debug.Assert(ReferenceEquals(_name, metadataName) == (_name == metadataName));
-          //      mangleName = !ReferenceEquals(_name, metadataName);
+                Debug.Assert(ReferenceEquals(_name, metadataName) == (_name == metadataName));
+              mangleName = !ReferenceEquals(_name, metadataName);
             }
 
             // check if this is one of the COR library types
-            //if (emittedNamespaceName != null &&
-            //    moduleSymbol.ContainingAssembly.KeepLookingForDeclaredSpecialTypes &&
-            //    this.DeclaredAccessibility == Accessibility.Public) // NB: this.flags was set above.
-            //{
-          //  ..    _corTypeId = SpecialTypes.GetTypeFromMetadataName(MetadataHelpers.BuildQualifiedName(emittedNamespaceName, metadataName));
-            //}
-            //else
-            //{
-            //    _corTypeId = SpecialType.None;
-            //}
+            if (emittedNamespaceName != null &&
+                moduleSymbol.ContainingAssembly.KeepLookingForDeclaredSpecialTypes &&
+                this.DeclaredAccessibility == Accessibility.Public) // NB: this.flags was set above.
+            {
+                _corTypeId = SpecialTypes.GetTypeFromMetadataName(MetadataHelpers.BuildQualifiedName(emittedNamespaceName, metadataName));
+            }
+            else
+            {
+                _corTypeId = SpecialType.None;
+            }
             _corTypeId = SpecialTypes.GetTypeFromMetadataName(MetadataHelpers.BuildQualifiedName(emittedNamespaceName, metadataName));
             if (makeBad)
             {
@@ -446,7 +1004,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             try
             {
+              
                 var moduleSymbol = ContainingAotModule;
+                var dc = new MetadataDecoder(moduleSymbol);
                 var interfaceImpls = _handle.GetInterfaces();
 
                 if (interfaceImpls.Length > 0)
@@ -455,7 +1015,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
                     foreach (var interfaceImpl in interfaceImpls)
                     {
-                        TypeSymbol typeSymbol = moduleSymbol.TypeHandleToTypeMap[interfaceImpl];
+                        TypeSymbol typeSymbol = dc.GetTypeOfToken(interfaceImpl);
 
 
                         var namedTypeSymbol = typeSymbol as NamedTypeSymbol ?? new UnsupportedMetadataTypeSymbol(); // interface list contains a bad type
@@ -593,39 +1153,106 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
          
             _typekind = res;
         }
-        public override TypeKind TypeKind => _typekind;
-
-        List<AotFieldSymbol> ffs = new List<AotFieldSymbol>();
-        void Load()
+        public override TypeKind TypeKind
         {
-            Type wee;
-           
-       var fs=     Handle.GetMembers();
-            foreach(var f in fs)
+            get
             {
-              switch (f)
+                TypeKind result = _lazyKind;
 
+                if (result == TypeKind.Unknown)
                 {
-                    case FieldInfo field:
-                        var n_f = new AotFieldSymbol(this.ContainingAotModule, this, field);
-                        ffs.Add(n_f);
-                        break;
-                    case MethodBase mb:
-                        var m_f = new AotMethodSymbol( mb);
-                        // ffs.Add(n_f);
-                        break;
-                    case EventInfo ev:
-                        var e_f = new AotEventSymbol(ContainingAotModule, this, ev, default);
-                        break;
-                    case PropertyInfo pr:
+                    if ((_flags&TypeAttributes.Interface)!=0)
+                    {
+                        result = TypeKind.Interface;
+                    }
+                    else
+                    {
+                        TypeSymbol @base = GetDeclaredBaseType(ignoreNullability: true);
 
-                        break;
-                }               
-             
-            }   
-      
-          
+                        result = TypeKind.Class;
+
+                        if ((object)@base != null)
+                        {
+                            SpecialType baseCorTypeId = @base.SpecialType;
+
+                            switch (baseCorTypeId)
+                            {
+                                case SpecialType.System_Enum:
+                                    // Enum
+                                    result = TypeKind.Enum;
+                                    break;
+
+                                case SpecialType.System_MulticastDelegate:
+                                    // Delegate
+                                    result = TypeKind.Delegate;
+                                    break;
+
+                                case SpecialType.System_ValueType:
+                                    // System.Enum is the only class that derives from ValueType
+                                    if (this.SpecialType != SpecialType.System_Enum)
+                                    {
+                                        // Struct
+                                        result = TypeKind.Struct;
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+
+                    _lazyKind = result;
+                }
+
+                return result;
+            }
         }
+        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
+        {
+            return this.GetMembersUnordered();
+        }
+
+        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
+        {
+            return this.GetMembers(name);
+        }
+
+        internal override ImmutableArray<TypeSymbolWithAnnotations> TypeArgumentsNoUseSiteDiagnostics
+        {
+            get
+            {
+                return ImmutableArray<TypeSymbolWithAnnotations>.Empty;
+            }
+        }
+        //    List<AotFieldSymbol> ffs = new List<AotFieldSymbol>();
+        // void Load()
+        // {
+        //     Type wee;
+
+        //var fs=     Handle.GetMembers();
+        //     foreach(var f in fs)
+        //     {
+        //       switch (f)
+
+        //         {
+        //             case FieldInfo field:
+        //                 var n_f = new AotFieldSymbol(this.ContainingAotModule, this, field);
+        //                 ffs.Add(n_f);
+        //                 break;
+        //             case MethodBase mb:
+        //                 var m_f = new AotMethodSymbol( mb);
+        //                 // ffs.Add(n_f);
+        //                 break;
+        //             case EventInfo ev:
+        //                 var e_f = new AotEventSymbol(ContainingAotModule, this, ev, default);
+        //                 break;
+        //             case PropertyInfo pr:
+
+        //                 break;
+        //         }               
+
+        //     }   
+
+
+        // }
         private void EnsureAllMembersAreLoaded()
         {
             if (_lazyMembersByName == null)
@@ -662,21 +1289,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 foreach (var fieldRid in (_handle).GetFields())
                 {
-                    try
-                    {
-                        if (!(isOrdinaryEmbeddableStruct ||
-                            (isOrdinaryStruct && (fieldRid.Attributes & FieldAttributes.Static) == 0) 
-                            ))
-                        {
-                            continue;
-                        }
-                    }
-                    catch (BadImageFormatException)
-                    { }
+                    //try
+                    //{
+                    //    if (!(isOrdinaryEmbeddableStruct ||
+                    //        (isOrdinaryStruct && (fieldRid.Attributes & FieldAttributes.Static) == 0) 
+                    //        ))
+                    //    {
+                    //        continue;
+                    //    }
+                    //}
+                    //catch (BadImageFormatException)
+                    //{ }
 
                     var symbol = new AotFieldSymbol(moduleSymbol, this, fieldRid);
                     fieldMembers.Add(symbol);
 
+                    var v = symbol.ConstantValue;
                     // Only private fields are potentially backing fields for field-like events.
                     if (symbol.DeclaredAccessibility == Accessibility.Private)
                     {
@@ -767,6 +1395,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     // Create a dictionary of method symbols indexed by metadata handle
                     // (to allow efficient lookup when matching property accessors).
                     PooledDictionary<MethodInfo, AotMethodSymbol> methodHandleToSymbol = this.CreateMethods(nonFieldMembers);
+                   this.CreateConstructor(nonFieldMembers);
 
                     if (this.TypeKind == TypeKind.Struct)
                     {
@@ -905,6 +1534,31 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 members.Free();
             }
         }
+        private void CreateConstructor(ArrayBuilder<Symbol> members)
+        {
+            var module = this.ContainingAotModule;
+
+            // for ordinary embeddable struct types we import private members so that we can report appropriate errors if the structure is used 
+            var isOrdinaryEmbeddableStruct = (this.TypeKind == TypeKind.Struct) && (this.SpecialType == Microsoft.CodeAnalysis.SpecialType.None) && this.ContainingAssembly.IsLinked;
+
+            try
+            {
+                foreach (var methodHandle in _handle.GetConstructors())
+                {
+                    //  if (isOrdinaryEmbeddableStruct || module.ShouldImportMethod(methodHandle, moduleSymbol.ImportOptions))
+                    {
+                        var method = new AotMethodSymbol(module, this, methodHandle);
+                        members.Add(method);
+                      var a1=  method.Parameters;
+                     //   map.Add(methodHandle, method);
+                    }
+                }
+
+            }
+            catch
+            { }
+
+        }
         private PooledDictionary<MethodInfo, AotMethodSymbol> CreateMethods(ArrayBuilder<Symbol> members)
         {
             var module = this.ContainingAotModule;
@@ -924,8 +1578,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         map.Add(methodHandle, method);
                     }
                 }
+
             }
-            catch (BadImageFormatException)
+            catch 
             { }
 
             return map;
@@ -949,6 +1604,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             try
             {
+          var pw=      _handle.GetProperties();
                 foreach (var propertyDef in (_handle).GetProperties())
                 {
                     try

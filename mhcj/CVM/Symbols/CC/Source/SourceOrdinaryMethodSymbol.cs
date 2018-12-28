@@ -1116,7 +1116,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             var typeMap1 = new TypeMap(typeParameters1, indexedTypeParameters, allowAlpha: true);
             var typeMap2 = new TypeMap(typeParameters2, indexedTypeParameters, allowAlpha: true);
 
-            return MemberSignatureComparer.HaveSameConstraints(typeParameters1, typeMap1, typeParameters2, typeMap2);
+            return MemberSignatureComparer<Symbol>.HaveSameConstraints(typeParameters1, typeMap1, typeParameters2, typeMap2);
         }
 
         internal override bool CallsAreOmitted(SyntaxTree syntaxTree)

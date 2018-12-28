@@ -132,10 +132,17 @@ namespace Microsoft.CodeAnalysis.CSharp.CodeGen
           //  (BlockSyntax blockBody, ArrowExpressionClauseSyntax expressionBody) 
                 
             var a    = sourceMethod?.Bodies ?? default;
-            var blockBody = a.Item1;
-            var expressionBody = a.Item2;
-            _methodBodySyntaxOpt = (SyntaxNode)blockBody ?? expressionBody ?? sourceMethod?.SyntaxNode;
-        }
+            try
+            {
+                var blockBody = a.Item1;
+                var expressionBody = a.Item2;
+                _methodBodySyntaxOpt = (SyntaxNode)blockBody ?? expressionBody ?? sourceMethod?.SyntaxNode;
+            }
+            catch
+            {
+                _methodBodySyntaxOpt = default;
+            }
+            }
 
         private bool IsDebugPlus()
         {

@@ -64,7 +64,16 @@
         /// <summary>The name of a type parameter.</summary>
         TypeParameterName = 26,
         /// <summary>The name of a query range variable..</summary>
-        RangeVariableName = 27
+        RangeVariableName = 27,
+               /// <summary>The name of an enum member.</summary>
+        EnumMemberName = 28,
+        /// <summary>The name of a reduced extension method.</summary>
+        /// <remarks>
+        /// When an extension method is in it's non-reduced form it will be will be marked as MethodName.
+        /// </remarks>
+        ExtensionMethodName = 29,
+        /// <summary>The name of a field or local constant.</summary>
+        ConstantName = 30,
     }
 
     internal static class InternalSymbolDisplayPartKind

@@ -133,10 +133,10 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     for (i = 1; i < count; i++)
                     {
-                        var newResult = modules[i].LookupTopLevelMetadataType(ref emittedName);
+                       var newResult =modules[i].LookupTopLevelMetadataType(ref emittedName);
 
                         // Hold on to the first missing type result, unless we found the type.
-                        if (!(newResult is MissingMetadataTypeSymbol))
+                       if (!(newResult is MissingMetadataTypeSymbol))
                         {
                             result = newResult;
                             break;

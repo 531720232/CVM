@@ -679,7 +679,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         suppressAccessors = true;
                     }
                     else if (overridingMember.ContainsTupleNames() &&
-                        MemberSignatureComparer.ConsideringTupleNamesCreatesDifference(overridingMember, overriddenMember))
+                        MemberSignatureComparer<Symbol>.ConsideringTupleNamesCreatesDifference(overridingMember, overriddenMember))
                     {
                         // it is ok to override with no tuple names, for compatibility with C# 6, but otherwise names should match
                         diagnostics.Add(ErrorCode.ERR_CantChangeTupleNamesOnOverride, overridingMemberLocation, overridingMember, overriddenMember);
@@ -1121,7 +1121,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // override is correct from the runtime's perspective (esp the custom modifiers
             // match), then we can just twiddle the metadata virtual bit.  Otherwise, we need
             // to create an explicit implementation that delegates to the real implementation.
-            if (MemberSignatureComparer.RuntimeImplicitImplementationComparer.Equals(implementingMethod, interfaceMethod) &&
+            if (MemberSignatureComparer<Symbol>.RuntimeImplicitImplementationComparer.Equals(implementingMethod, interfaceMethod) &&
                 IsOverrideOfPossibleImplementationUnderRuntimeRules(implementingMethod, @interfaceMethod.ContainingType))
             {
                 if (ReferenceEquals(this.ContainingModule, implementingMethodOriginalDefinition.ContainingModule))

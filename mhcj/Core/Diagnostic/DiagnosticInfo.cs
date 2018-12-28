@@ -91,29 +91,29 @@ namespace Microsoft.CodeAnalysis
         [Conditional("DEBUG")]
         internal static void AssertMessageSerializable(object[] args)
         {
-            foreach (var arg in args)
-            {
-                Debug.Assert(arg != null);
+            //foreach (var arg in args)
+            //{
+            //    Debug.Assert(arg != null);
 
-                if (arg is IFormattable)
-                {
-                    continue;
-                }
+            //    if (arg is IFormattable)
+            //    {
+            //        continue;
+            //    }
 
-                var type = arg.GetType();
-                if (type == typeof(string))
-                {
-                    continue;
-                }
+            //    var type = arg.GetType();
+            //    if (type == typeof(string))
+            //    {
+            //        continue;
+            //    }
 
-                var info = type;
-                if (info.IsPrimitive)
-                {
-                    continue;
-                }
+            //    var info = type;
+            //    if (info.IsPrimitive)
+            //    {
+            //        continue;
+            //    }
 
-                throw ExceptionUtilities.UnexpectedValue(type);
-            }
+            //    throw ExceptionUtilities.UnexpectedValue(type);
+            //}
         }
 
         // Only the compiler creates instances.

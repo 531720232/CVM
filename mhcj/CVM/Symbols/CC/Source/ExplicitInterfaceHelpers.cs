@@ -226,7 +226,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     continue;
                 }
 
-                if (MemberSignatureComparer.ExplicitImplementationLookupComparer.Equals(implementingMember, interfaceMember))
+                if (MemberSignatureComparer<Symbol>.ExplicitImplementationLookupComparer.Equals(implementingMember, interfaceMember))
                 {
                     foundMatchingMember = true;
                     // Cannot implement accessor directly unless
@@ -274,7 +274,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 return;
             }
 
-            if (implementingMember.ContainsTupleNames() && MemberSignatureComparer.ConsideringTupleNamesCreatesDifference(implementingMember, implementedMember))
+            if (implementingMember.ContainsTupleNames() && MemberSignatureComparer<Symbol>.ConsideringTupleNamesCreatesDifference(implementingMember, implementedMember))
             {
                 // it is ok to explicitly implement with no tuple names, for compatibility with C# 6, but otherwise names should match
                 var memberLocation = implementingMember.Locations[0];
@@ -308,7 +308,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     // NOTE: we are more precise than Dev10 - we will not generate a diagnostic if the return types differ 
                     // because that is enough to distinguish them in the runtime.
-                    if (!explicitInterfaceTypeIsDefinition && MemberSignatureComparer.RuntimeSignatureComparer.Equals(implementedMember, collisionCandidateMember))
+                    if (!explicitInterfaceTypeIsDefinition && MemberSignatureComparer<Symbol>.RuntimeSignatureComparer.Equals(implementedMember, collisionCandidateMember))
                     {
                         bool foundMismatchedRefKind = false;
                         ImmutableArray<ParameterSymbol> implementedMemberParameters = implementedMember.GetParameters();
@@ -336,7 +336,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     }
                     else
                     {
-                        if (MemberSignatureComparer.ExplicitImplementationComparer.Equals(implementedMember, collisionCandidateMember))
+                        if (MemberSignatureComparer<Symbol>.ExplicitImplementationComparer.Equals(implementedMember, collisionCandidateMember))
                         {
                             // NOTE: this is different from the same error code above.  Above, the diagnostic means that
                             // the runtime behavior is ambiguous because the runtime cannot distinguish between two or

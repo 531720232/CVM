@@ -142,6 +142,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 typesByNS,
                 StringComparer.Ordinal,
                 out nestedTypes, out nestedNamespaces);
+        
 
             lazyNamespaces =     LazyInitializeNamespaces(nestedNamespaces);
 

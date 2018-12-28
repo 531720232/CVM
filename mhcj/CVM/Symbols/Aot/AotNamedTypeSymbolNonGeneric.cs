@@ -9,18 +9,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
     internal sealed class AotNamedTypeSymbolNonGeneric : AotNamedTypeSymbol
     {
-        private ModuleSymbol aot;
-        private NamespaceOrTypeSymbol ab;
-        private Type type;
-        private string em;
 
-        internal AotNamedTypeSymbolNonGeneric(AotModuleSymbol aot, NamespaceOrTypeSymbol ab, Type type, string em):base(aot,ab,type,em,0)
+    //    private ModuleSymbol aot;
+   //     private NamespaceOrTypeSymbol _container;
+   //     private Type type;
+   //     private string em;
+
+        internal AotNamedTypeSymbolNonGeneric(AotModuleSymbol aot, NamespaceOrTypeSymbol ab, Type type, string em, out bool m) :base(aot,ab,type,em,0,out m )
         {
-            this.aot = aot;
-            this.ab = ab;
-            this.type = type;
-            this.em = em;
+     //       this.aot = aot;
+     //       this._container = ab;
+    //        this.type = type;
+    //        this.em = em;
         }
+     
         public override int Arity
         {
             get
@@ -29,23 +31,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        public override ImmutableArray<TypeParameterSymbol> TypeParameters => throw new NotImplementedException();
-
-
-        public override bool MightContainExtensionMethods => throw new NotImplementedException();
-
-
-        public override IEnumerable<string> MemberNames => throw new NotImplementedException();
-
-        public override Accessibility DeclaredAccessibility =>Accessibility.Public;
-
-        public override bool IsSerializable => throw new NotImplementedException();
 
 
 
-        public override ImmutableArray<Location> Locations => throw new NotImplementedException();
 
-        public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences => throw new NotImplementedException();
+
+
+
+
+
+
 
   
 
@@ -57,16 +52,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal override int MetadataArity => throw new NotImplementedException();
-
-        internal override ImmutableArray<TypeSymbolWithAnnotations> TypeArgumentsNoUseSiteDiagnostics
+        internal override int MetadataArity
         {
             get
             {
-                return ImmutableArray<TypeSymbolWithAnnotations>.Empty;
+                var containingType = _container as AotNamedTypeSymbol;
+                return (object)containingType == null ? 0 : containingType.MetadataArity;
             }
         }
 
+  
 
 
 
@@ -75,45 +70,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
      
 
-        public override ImmutableArray<Symbol> GetMembers()
-        {
-            throw new NotImplementedException();
-        }
+     
 
       
-
-   
-
-        internal override ImmutableArray<string> GetAppliedConditionalSymbols()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override AttributeUsageInfo GetAttributeUsageInfo()
-        {
-            throw new NotImplementedException();
-        }
-
-      
-
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override ImmutableArray<Symbol> GetEarlyAttributeDecodingMembers(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override IEnumerable<FieldSymbol> GetFieldsToEmit()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override IEnumerable<SecurityAttribute> GetSecurityInformation()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -770,7 +770,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             // interface. Thus, we don't know which method to choose. The solution?
             // Don't add any GetEnumerator method.
 
-            var comparer = MemberSignatureComparer.CSharpOverrideComparer;
+            var comparer = MemberSignatureComparer<Symbol>.CSharpOverrideComparer;
 
             var allMembers = new HashSet<Symbol>(comparer);
             var conflictingMembers = new HashSet<Symbol>(comparer);
@@ -1104,13 +1104,21 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             bool inaccessibleViaQualifier;
             DiagnosticInfo diagInfo;
-
+            Symbol unwrappedSymbol = default;
             // General pattern: checks and diagnostics refer to unwrapped symbol,
             // but lookup results refer to symbol.
+            if (symbol.Kind==SymbolKind.Alias)
+            {
+                unwrappedSymbol = ((AliasSymbol)symbol).GetAliasTarget(basesBeingResolved);
+            }
+            else
+            {
+                unwrappedSymbol = symbol;
+            }
 
-            var unwrappedSymbol = symbol.Kind == SymbolKind.Alias
-                ? ((AliasSymbol)symbol).GetAliasTarget(basesBeingResolved)
-                : symbol;
+            //var unwrappedSymbol = symbol.Kind == SymbolKind.Alias
+            //    ? ((AliasSymbol)symbol).GetAliasTarget(basesBeingResolved)
+            //    : symbol;
 
             // Check for symbols marked with 'Microsoft.CodeAnalysis.Embedded' attribute
             if (!this.Compilation.SourceModule.Equals(unwrappedSymbol.ContainingModule) && unwrappedSymbol.IsHiddenByCodeAnalysisEmbeddedAttribute())

@@ -854,6 +854,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             get
             {
+              
                 throw ExceptionUtilities.Unreachable;
             }
         }
@@ -1146,7 +1147,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         public string ToDisplayString(SymbolDisplayFormat format = null)
         {
-            return Name;//SymbolDisplay.ToDisplayString(this, format);
+            return SymbolDisplay.ToDisplayString(this, format);
         }
 
         public ImmutableArray<SymbolDisplayPart> ToDisplayParts(SymbolDisplayFormat format = null)

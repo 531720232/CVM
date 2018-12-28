@@ -273,7 +273,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
 
             for (int i = 0; i < impls.Length; i++)
             {
-                var retargeted = this.RetargetingTranslator.Retarget(impls[i],(IEqualityComparer < MethodSymbol >) MemberSignatureComparer.RetargetedExplicitImplementationComparer);
+                var retargeted = this.RetargetingTranslator.Retarget(impls[i],(IEqualityComparer < MethodSymbol >) MemberSignatureComparer<Symbol>.RetargetedExplicitImplementationComparer);
                 if ((object)retargeted != null)
                 {
                     builder.Add(retargeted);

@@ -822,7 +822,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         private static bool IsOverride(Symbol overridden, Symbol overrider)
         {
             if (overridden.ContainingType == overrider.ContainingType ||
-                !MemberSignatureComparer.SloppyOverrideComparer.Equals(overridden, overrider))
+                !MemberSignatureComparer<Symbol>.SloppyOverrideComparer.Equals(overridden, overrider))
             {
                 // Easy out.
                 return false;

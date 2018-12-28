@@ -1,6 +1,10 @@
-﻿using CVM.Collections.Immutable;
+﻿using System;
+using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
+using Microsoft.CodeAnalysis.PooledObjects;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -18,16 +22,121 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private readonly ushort _ordinal;
 
         public override TypeSymbolWithAnnotations Type => _type;
-
-        public override RefKind RefKind => RefKind.None;
+          RefKind _refKind ;
+        public override RefKind RefKind => _refKind;
 
         public override ImmutableArray<CustomModifier> RefCustomModifiers => ImmutableArray<CustomModifier>.Empty;
 
         internal override MarshalPseudoCustomAttributeData MarshallingInformation => null;
 
-        public override int Ordinal =>0;
+        public override int Ordinal => _ordinal;
 
-        public override bool IsParams => _lazyIsParams.Value();
+
+        /// <summary>
+        /// Attributes filtered out from m_lazyCustomAttributes, ParamArray, etc.
+        /// </summary>
+        private ImmutableArray<CSharpAttributeData> _lazyHiddenAttributes;
+        public override ImmutableArray<CSharpAttributeData> GetAttributes()
+        {
+            if (_lazyCustomAttributes.IsDefault)
+            {
+                Debug.Assert(_handle!=null);
+                var containingPEModuleSymbol = (AotModuleSymbol)this.ContainingModule;
+
+                // Filter out ParamArrayAttributes if necessary and cache
+                // the attribute handle for GetCustomAttributesToEmit
+                bool filterOutParamArrayAttribute = (!_lazyIsParams.HasValue() || _lazyIsParams.Value());
+
+                ConstantValue defaultValue = this.ExplicitDefaultConstantValue;
+                AttributeDescription filterOutConstantAttributeDescription = default(AttributeDescription);
+
+                if ((object)defaultValue != null)
+                {
+                    if (defaultValue.Discriminator == ConstantValueTypeDiscriminator.DateTime)
+                    {
+                        filterOutConstantAttributeDescription = AttributeDescription.DateTimeConstantAttribute;
+                    }
+                    else if (defaultValue.Discriminator == ConstantValueTypeDiscriminator.Decimal)
+                    {
+                        filterOutConstantAttributeDescription = AttributeDescription.DecimalConstantAttribute;
+                    }
+                }
+
+                bool filterIsReadOnlyAttribute = this.RefKind == RefKind.In;
+
+                if (filterOutParamArrayAttribute || filterOutConstantAttributeDescription.Signatures != null || filterIsReadOnlyAttribute)
+                {
+                    Attribute paramArrayAttribute;
+                    Attribute constantAttribute;
+                    Attribute isReadOnlyAttribute;
+                  
+                    ImmutableArray<CSharpAttributeData> attributes =
+                        containingPEModuleSymbol.GetCustomAttributesForToken(
+                            _handle,
+                            out paramArrayAttribute,
+                            filterOutParamArrayAttribute ? AttributeDescription.ParamArrayAttribute : default,
+                            out constantAttribute,
+                            filterOutConstantAttributeDescription,
+                            out isReadOnlyAttribute,
+                      filterIsReadOnlyAttribute ? AttributeDescription.IsReadOnlyAttribute : default,
+                            out _,
+                            default);
+
+                    if (paramArrayAttribute!=null || constantAttribute!=null)
+                    {
+                        var builder = ArrayBuilder<CSharpAttributeData>.GetInstance();
+
+                        if (paramArrayAttribute != null)
+                        {
+                            builder.Add(new AotAttributeData(containingPEModuleSymbol, paramArrayAttribute));
+                        }
+
+                        if (constantAttribute!= null)
+                        {
+                            builder.Add(new AotAttributeData(containingPEModuleSymbol, constantAttribute));
+                        }
+
+                        ImmutableInterlocked.InterlockedInitialize(ref _lazyHiddenAttributes, builder.ToImmutableAndFree());
+                    }
+                    else
+                    {
+                        ImmutableInterlocked.InterlockedInitialize(ref _lazyHiddenAttributes, ImmutableArray<CSharpAttributeData>.Empty);
+                    }
+
+                    if (!_lazyIsParams.HasValue())
+                    {
+                        Debug.Assert(filterOutParamArrayAttribute);
+                        _lazyIsParams = (paramArrayAttribute != null).ToThreeState();
+                    }
+
+                    ImmutableInterlocked.InterlockedInitialize(
+                        ref _lazyCustomAttributes,
+                        attributes);
+                }
+                else
+                {
+                    ImmutableInterlocked.InterlockedInitialize(ref _lazyHiddenAttributes, ImmutableArray<CSharpAttributeData>.Empty);
+                    containingPEModuleSymbol.LoadCustomAttributes(_handle, ref _lazyCustomAttributes);
+                }
+            }
+
+            Debug.Assert(!_lazyHiddenAttributes.IsDefault);
+            return _lazyCustomAttributes;
+        }
+        public override bool IsParams    {
+            get
+            {
+                // This is also populated by loading attributes, but loading
+                // attributes is more expensive, so we should only do it if
+                // attributes are requested.
+                if (!_lazyIsParams.HasValue())
+                {
+
+                    _lazyIsParams = _moduleSymbol.HasParamsAttribute(_handle).ToThreeState();
+                }
+                return _lazyIsParams.Value();
+            }
+        }
 
         internal override bool IsMetadataOptional => (_flags&ParameterAttributes.Optional)!=0;
 
@@ -35,11 +144,39 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool IsMetadataOut => (_flags & ParameterAttributes.Out) != 0;
 
-        internal override ConstantValue ExplicitDefaultConstantValue => throw new System.NotImplementedException();
+        internal override ConstantValue ExplicitDefaultConstantValue
+        {
+            get
+            {
 
-        internal override bool IsIDispatchConstant =>false;
+               
+                // The HasDefault flag has to be set, it doesn't suffice to mark the parameter with DefaultParameterValueAttribute.
+                if (_lazyDefaultValue == ConstantValue.Unset)
+                {
+                    // From the C# point of view, there is no need to import a parameter's default value
+                    // if the language isn't going to treat it as optional. However, we might need metadata constant value for NoPia.
+                    // NOTE: Ignoring attributes for non-Optional parameters disrupts round-tripping, but the trade-off seems acceptable.
+                    ConstantValue value = ImportConstantValue(ignoreAttributes: !IsMetadataOptional);
+                    CVM.AHelper.CompareExchange(ref _lazyDefaultValue, value, ConstantValue.Unset);
+                }
 
-        internal override bool IsIUnknownConstant => false;
+                return _lazyDefaultValue;
+            }
+        }
+internal override bool IsIDispatchConstant =>false;
+
+
+
+        internal override bool IsIUnknownConstant
+        {
+            get
+            {
+             
+
+
+                return this._moduleSymbol.HasAttribute(_handle,typeof(System.Runtime.CompilerServices.IUnknownConstantAttribute));
+            }
+        }
 
         internal override bool IsCallerFilePath => false;
 
@@ -65,6 +202,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                   bool isReturn,
                   out bool isBad)
         {
+            
             return Create(
                 moduleSymbol, containingSymbol, isContainingSymbolVirtual, ordinal,
                 parameterInfo.IsByRef, parameterInfo.RefCustomModifiers, parameterInfo.Type, extraAnnotations,
@@ -151,6 +289,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             _handle = handle;
 
+
             RefKind refKind = RefKind.None;
 
             if (handle==null)
@@ -179,7 +318,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 {
                     isBad = true;
                 }
-
+                isByRef = _handle.ParameterType.IsByRef;
                 if (isByRef)
                 {
                     ParameterAttributes inOutFlags = _flags & (ParameterAttributes.Out | ParameterAttributes.In);
@@ -188,7 +327,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     {
                         refKind = RefKind.Out;
                     }
-                    else if (handle.ParameterType.BaseType == typeof(System.Collections.ReadOnlyCollectionBase))
+                    else if (handle.ParameterType.BaseType == typeof(System.Collections.ReadOnlyCollectionBase)||handle.IsIn)
                     {
                         refKind = RefKind.In;
                     }
@@ -215,11 +354,54 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 // As was done historically, if the parameter doesn't have a name, we give it the name "value".
                 _name = "value";
             }
-
+       
        //     _packedFlags = new PackedFlags(refKind, attributesAreComplete: handle.IsNil, hasNameInMetadata: hasNameInMetadata);
 
             Debug.Assert(refKind == this.RefKind);
         //    Debug.Assert(hasNameInMetadata == this.HasNameInMetadata);
         }
+        internal ConstantValue ImportConstantValue( bool ignoreAttributes = false)
+        {
+            Debug.Assert(_handle!=null);
+
+            // Metadata Spec 22.33: 
+            //   6. If Flags.HasDefault = 1 then this row [of Param table] shall own exactly one row in the Constant table [ERROR]
+            //   7. If Flags.HasDefault = 0, then there shall be no rows in the Constant table owned by this row [ERROR]
+            ConstantValue value = null;
+
+            if ((_flags & ParameterAttributes.HasDefault) != 0)
+            {
+                value =AotAssemblySymbol.Inst.Aot.GetConstantValue(_handle.DefaultValue);
+            }
+
+            if (value == null && !ignoreAttributes)
+            {
+                value = GetDefaultDecimalOrDateTimeValue();
+            }
+
+            return value;
+        }
+        private ConstantValue GetDefaultDecimalOrDateTimeValue()
+        {
+            Debug.Assert(_handle!=null);
+            ConstantValue value = null;
+
+            // It is possible in Visual Basic for a parameter of object type to have a default value of DateTime type.
+            // If it's present, use it.  We'll let the call-site figure out whether it can actually be used.
+            if (_moduleSymbol.HasDateTimeConstantAttribute(_handle, out value))
+           {
+                return value;
+            }
+
+            // It is possible in Visual Basic for a parameter of object type to have a default value of decimal type.
+            // If it's present, use it.  We'll let the call-site figure out whether it can actually be used.
+            if (_moduleSymbol.HasDecimalConstantAttribute(_handle, out value))
+            {
+                return value;
+            }
+
+            return value;
+        }
+
     }
 }

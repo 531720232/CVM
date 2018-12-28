@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// The return value is not expected to be syntactically valid C#.
         /// </remarks>
         public static string ToDisplayString(
-            object symbol,
+            ISymbol symbol,
             SymbolDisplayFormat format = null)
         {
             return ToDisplayParts(symbol, format).ToDisplayString();
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// The return value is not expected to be syntactically valid C#.
         /// </remarks>
         public static string ToMinimalDisplayString(
-            object symbol,
+            ISymbol symbol,
             object semanticModel,
             int position,
             SymbolDisplayFormat format = null)
@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// Parts are not localized until they are converted to strings.
         /// </remarks>
         public static ImmutableArray<SymbolDisplayPart> ToDisplayParts(
-            object symbol,
+            ISymbol symbol,
             SymbolDisplayFormat format = null)
         {
             // null indicates the default format
@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         /// Parts are not localized until they are converted to strings.
         /// </remarks>
         public static ImmutableArray<SymbolDisplayPart> ToMinimalDisplayParts(
-            object symbol,
+            ISymbol symbol,
             object semanticModel,
             int position,
             SymbolDisplayFormat format = null)
@@ -96,7 +96,7 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
 
         private static ImmutableArray<SymbolDisplayPart> ToDisplayParts(
-            object symbol,
+            ISymbol symbol,
             object semanticModelOpt,
             int positionOpt,
             SymbolDisplayFormat format,
@@ -113,6 +113,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     throw new ArgumentException();
                 }
+
               
             }
             else
@@ -122,8 +123,8 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
 
             var builder = ArrayBuilder<SymbolDisplayPart>.GetInstance();
-            //var visitor = new SymbolDisplayVisitor(builder, format, semanticModelOpt, positionOpt);
-            //symbol.Accept(visitor);
+            var visitor = new SymbolDisplayVisitor(builder, format, null, positionOpt);
+            symbol.Accept(visitor);
             return builder.ToImmutableAndFree();
         }
 

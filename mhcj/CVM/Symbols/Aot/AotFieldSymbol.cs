@@ -290,7 +290,41 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private void EnsureSignatureIsLoaded()
         {
-            throw new NotImplementedException();
+            if (_lazyType.IsNull)
+            {
+                var moduleSymbol = _containingType.ContainingAotModule;
+                bool isVolatile;
+                ImmutableArray<ModifierInfo<TypeSymbol>> customModifiers;
+                var mt = MetadataTypeName.FromFullName(Handle.FieldType.FullName);
+                TypeSymbol typeSymbol = moduleSymbol.LookupTopLevelMetadataType(ref mt);
+
+
+             var ty1=   typeof(System.Data.DataRelation
+                    );
+
+                var mt2 = MetadataTypeName.FromFullName(ty1.FullName);
+                TypeSymbol typeSymbol2 =AotAssemblySymbol.Inst.LookupTopLevelMetadataType(ref mt2,false);
+
+                // We start without annotations
+                var type = TypeSymbolWithAnnotations.Create(typeSymbol, customModifiers: default);
+
+                // Decode nullable before tuple types to avoid converting between
+                // NamedTypeSymbol and TupleTypeSymbol unnecessarily.
+               
+
+                _lazyIsVolatile = false;
+
+                TypeSymbol fixedElementType;
+                int fixedSize;
+                //if (customModifiersArray.IsEmpty && IsFixedBuffer(out fixedSize, out fixedElementType))
+                //{
+                //    _lazyFixedSize = fixedSize;
+                //    _lazyFixedImplementationType = type.TypeSymbol as NamedTypeSymbol;
+                //    type = TypeSymbolWithAnnotations.Create(new PointerTypeSymbol(TypeSymbolWithAnnotations.Create(fixedElementType)));
+                //}
+
+                _lazyType.InterlockedInitialize(type);
+            }
         }
 
         internal override NamedTypeSymbol FixedImplementationType(PEModuleBuilder emitModule)
@@ -332,6 +366,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
+      
+
         internal override ConstantValue GetConstantValue(ConstantFieldsInProgress inProgress, bool earlyDecodingWellKnownAttributes)
         {
             if (_lazyConstantValue == Microsoft.CodeAnalysis.ConstantValue.Unset)
@@ -341,10 +377,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 if ((_flags & FieldAttributes.Literal) != 0)
                 {
                     value = _containingType.ContainingAotModule.GetConstantFieldValue(_handle);
+                
                 }
 
                 // If this is a Decimal, the constant value may come from DecimalConstantAttribute
-
+                var t2= this.Type;
                 if (this.Type.SpecialType == SpecialType.System_Decimal)
                 {
                     ConstantValue defaultValue;

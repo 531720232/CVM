@@ -169,10 +169,11 @@ namespace Microsoft.CodeAnalysis.CSharp
 
             diagnostics.AddRange(compilation.AdditionalCodegenWarnings);
 
+          
             // we can get unused field warnings only if compiling whole compilation.
             if (filterOpt == null)
             {
-                WarnUnusedFields(compilation, diagnostics, cancellationToken);
+       //         WarnUnusedFields(compilation, diagnostics, cancellationToken);
 
                 //MethodSymbol entryPoint = GetEntryPoint(compilation, moduleBeingBuiltOpt, hasDeclarationErrors, diagnostics, cancellationToken);
                 //if (moduleBeingBuiltOpt != null && entryPoint != null && compilation.Options.OutputKind.IsApplication())

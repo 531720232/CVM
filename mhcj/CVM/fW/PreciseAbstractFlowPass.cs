@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.CSharp
             this.methodMainNode = node;
             this.firstInRegion = firstInRegion;
             this.lastInRegion = lastInRegion;
-            _loopHeadState = new Dictionary<BoundLoopStatement, LocalState>((IEqualityComparer<BoundLoopStatement>)ReferenceEqualityComparer.Instance);
+            _loopHeadState = new Dictionary<BoundLoopStatement, LocalState>((IEqualityComparer<BoundLoopStatement>)ReferenceEqualityComparer3.Instance);
             _trackRegions = trackRegions;
             _trackExceptions = trackExceptions;
         }

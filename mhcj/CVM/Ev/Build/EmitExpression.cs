@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.CSharp.CodeGen
                 EmitExpressionCore(expression, used);
                 Debug.Assert(_recursionDepth == 1);
             }
-            catch 
+            catch (Exception e)
             {
                 _diagnostics.Add(ErrorCode.ERR_InsufficientStack,
                                  BoundTreeVisitor.CancelledByStackGuardException.GetTooLongOrComplexExpressionErrorLocation(expression));

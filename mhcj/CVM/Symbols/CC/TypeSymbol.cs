@@ -110,6 +110,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal static readonly EqualityComparer<TypeSymbol> EqualsIgnoringTupleNamesAndNullability = new TypeSymbolComparer(TypeCompareKind.IgnoreTupleNames | TypeCompareKind.IgnoreNullableModifiersForReferenceTypes);
 
+
+
         /// <summary>
         /// A comparer that treats dynamic and object as "the same" types, and also ignores tuple element names differences.
         /// </summary>
@@ -333,7 +335,28 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     x.Equals(y, _comparison);
             }
         }
+        internal sealed class TypeSymbolComparer<T> : EqualityComparer<T> where T:TypeSymbol
+        {
+            private readonly TypeCompareKind _comparison;
 
+            internal static readonly EqualityComparer<T> EqualsIgnoringTupleNamesAndNullability = new TypeSymbolComparer<T>(TypeCompareKind.IgnoreTupleNames | TypeCompareKind.IgnoreNullableModifiersForReferenceTypes);
+            public TypeSymbolComparer(TypeCompareKind comparison)
+            {
+                _comparison = comparison;
+            }
+
+            public override int GetHashCode(T obj)
+            {
+                return (object)obj == null ? 0 : obj.GetHashCode();
+            }
+
+            public override bool Equals(T x, T y)
+            {
+                return
+                    (object)x == null ? (object)y == null :
+                    x.Equals(y, _comparison);
+            }
+        }
         protected virtual ImmutableArray<NamedTypeSymbol> GetAllInterfaces()
         {
             var info = this.GetInterfaceInfo();
@@ -357,7 +380,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         protected virtual ImmutableArray<NamedTypeSymbol> MakeAllInterfaces()
         {
             var result = ArrayBuilder<NamedTypeSymbol>.GetInstance();
-            var visited = new HashSet<NamedTypeSymbol>((IEqualityComparer<NamedTypeSymbol>)EqualsIgnoringTupleNamesAndNullability);
+            var visited = new HashSet<NamedTypeSymbol>((IEqualityComparer<NamedTypeSymbol>)TypeSymbolComparer<NamedTypeSymbol>.EqualsIgnoringTupleNamesAndNullability);
 
             for (var baseType = this; !ReferenceEquals(baseType, null); baseType = baseType.BaseTypeNoUseSiteDiagnostics)
             {
@@ -1097,7 +1120,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            if (implicitImpl.ContainsTupleNames() && MemberSignatureComparer.ConsideringTupleNamesCreatesDifference(implicitImpl, interfaceMember))
+            if (implicitImpl.ContainsTupleNames() && MemberSignatureComparer<Symbol>.ConsideringTupleNamesCreatesDifference(implicitImpl, interfaceMember))
             {
                 // it is ok to implement implicitly with no tuple names, for compatibility with C# 6, but otherwise names should match
                 diagnostics.Add(ErrorCode.ERR_ImplBadTupleNames, GetImplicitImplementationDiagnosticLocation(interfaceMember, implementingType, implicitImpl), implicitImpl, interfaceMember);
@@ -1120,7 +1143,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     {
                         //do nothing - not an ambiguous implementation
                     }
-                    else if (MemberSignatureComparer.RuntimeImplicitImplementationComparer.Equals(interfaceMember, member) && !member.IsAccessor())
+                    else if (MemberSignatureComparer<Symbol>.RuntimeImplicitImplementationComparer.Equals(interfaceMember, member) && !member.IsAccessor())
                     {
                         // CONSIDER: Dev10 does not seem to report this for indexers or their accessors.
                         diagnostics.Add(ErrorCode.WRN_MultipleRuntimeImplementationMatches, GetImplicitImplementationDiagnosticLocation(interfaceMember, implementingType, member), member, interfaceMember, implementingType);
@@ -1290,7 +1313,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     var typeParameter1 = typeParameters1[i];
                     var typeParameter2 = typeParameters2[i];
 
-                    if (!MemberSignatureComparer.HaveSameConstraints(typeParameter1, typeMap1, typeParameter2, typeMap2))
+                    if (!MemberSignatureComparer<Symbol>.HaveSameConstraints(typeParameter1, typeMap1, typeParameter2, typeMap2))
                     {
                         // If the matching method for the interface member is defined on the implementing type,
                         // the matching method location is used for the error. Otherwise, the location of the
@@ -1302,7 +1325,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                         // error on B if the match to I.M is in a base class.)
                         diagnostics.Add(ErrorCode.ERR_ImplBadConstraints, GetImplicitImplementationDiagnosticLocation(interfaceMethod, implementingType, implicitImpl), typeParameter2.Name, implicitImpl, typeParameter1.Name, interfaceMethod);
                     }
-                    else if (!MemberSignatureComparer.HaveSameNullabilityInConstraints(typeParameter1, typeMap1, typeParameter2, typeMap2))
+                    else if (!MemberSignatureComparer<Symbol>.HaveSameNullabilityInConstraints(typeParameter1, typeMap1, typeParameter2, typeMap2))
                     {
                         diagnostics.Add(ErrorCode.WRN_NullabilityMismatchInConstraintsOnImplicitImplementation, GetImplicitImplementationDiagnosticLocation(interfaceMethod, implementingType, implicitImpl),
                                         typeParameter2.Name, implicitImpl, typeParameter1.Name, interfaceMethod);
@@ -1367,7 +1390,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     {
                         // We can ignore custom modifiers here, because our goal is to improve the helpfulness
                         // of an error we're already giving, rather than to generate a new error.
-                        if (MemberSignatureComparer.CSharpCloseImplicitImplementationComparer.Equals(interfaceMember, member))
+                        if (MemberSignatureComparer<Symbol>.CSharpCloseImplicitImplementationComparer.Equals(interfaceMember, member))
                         {
                             closeMismatch = member;
                         }
@@ -1415,7 +1438,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 // Inexact matches are acceptable because we'll just generate bridge members - explicit implementations
                 // with exact signatures that delegate to the inexact match.  This happens automatically in
                 // SourceMemberContainerTypeSymbol.SynthesizeInterfaceMemberImplementation.
-                return MemberSignatureComparer.CSharpImplicitImplementationComparer.Equals(interfaceMember, candidateMember);
+                return MemberSignatureComparer<Symbol>.CSharpImplicitImplementationComparer.Equals(interfaceMember, candidateMember);
             }
             else
             {
@@ -1424,7 +1447,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 // CLI interpretation instead.  For example, using this comparer might allow a member with a ref 
                 // parameter to implement a member with an out parameter -  which Dev10 would not allow - but that's
                 // okay because Dev10's behavior is not observable.
-                return MemberSignatureComparer.RuntimeImplicitImplementationComparer.Equals(interfaceMember, candidateMember);
+                return MemberSignatureComparer<Symbol>.RuntimeImplicitImplementationComparer.Equals(interfaceMember, candidateMember);
             }
         }
 

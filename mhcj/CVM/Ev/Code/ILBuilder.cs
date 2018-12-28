@@ -868,7 +868,104 @@ namespace Microsoft.CodeAnalysis.CodeGen
             }
 
             // Now linearize everything with computed offsets.
-            var writer =PooledInstrBuilder.GetInstance();
+            var writer =CVM_ILCC.GetInstance();
+
+            //for (var block = leaderBlock; block != null; block = block.NextBlock)
+            //{
+            //    // If the block has any IL markers, we can calculate their real IL offsets now
+            //    int blockFirstMarker = block.FirstILMarker;
+            //    if (blockFirstMarker >= 0)
+            //    {
+            //        int blockLastMarker = block.LastILMarker;
+            //        Debug.Assert(blockLastMarker >= blockFirstMarker);
+            //        for (int i = blockFirstMarker; i <= blockLastMarker; i++)
+            //        {
+            //            int blockOffset = _allocatedILMarkers[i].BlockOffset;
+            //            int absoluteOffset = GlobalDefine.Instance.ils.Count + blockOffset;
+            //            _allocatedILMarkers[i] = new ILMarker() { BlockOffset = blockOffset, AbsoluteOffset = absoluteOffset };
+            //        }
+            //    }
+
+            //  //  block.RegularInstructions?.WriteContentTo(writer);
+
+            //    switch (block.BranchCode)
+            //    {
+            //        case ILOpCode.Nop:
+            //            break;
+
+            //        case ILOpCode.Switch:
+            //            // switch (N, t1, t2... tN)
+            //            //  IL ==> ILOpCode.Switch < unsigned int32 > < int32 >... < int32 >
+
+            //            var c1 = 0;
+            //            Instruction instruction1 = new Instruction();
+            //            var switchBlock = (SwitchBlock)block;
+            //            // writer.Append(ILOpCode.Switch,switchBlock.BranchesCount);
+            //            instruction1.opcode = ILOpCode.Switch;
+            //            c1 += sizeof(byte);
+            //            GlobalDefine.Instance.ils2.Add(instruction1.opcode);
+            //            GlobalDefine.Instance.ils2.Add(switchBlock.BranchesCount);
+
+            //            //     instruction1.cc.Push(switchBlock.BranchesCount);
+            //            c1 += sizeof(uint);
+
+
+            //            int switchBlockEnd = switchBlock.Start + switchBlock.TotalSize;
+
+            //            var blockBuilder = ArrayBuilder<BasicBlock>.GetInstance();
+            //            switchBlock.GetBranchBlocks(blockBuilder);
+
+            //            foreach (var branchBlock in blockBuilder)
+            //            {
+            //                GlobalDefine.Instance.ils2.Add(branchBlock.Start - switchBlockEnd);
+            //               //    instruction1.cc.Push(branchBlock.Start - switchBlockEnd);
+            //               c1 += sizeof(int);
+            //              //  writer.WriteInt32(branchBlock.Start - switchBlockEnd);
+            //            }
+            //            writer.Count += c1;
+            //            blockBuilder.Free();
+
+            //            break;
+
+            //        default:
+            //            //        WriteOpCode(writer, block.BranchCode);
+            //            var c = sizeof(byte);
+            //            Instruction instruction = new Instruction();
+            //            instruction.opcode = block.BranchCode;
+            //            GlobalDefine.Instance.ils2.Add(block.BranchCode);
+            //            if (block.BranchLabel != null)
+            //            {
+            //                int target = block.BranchBlock.Start;
+            //                int curBlockEnd = block.Start + block.TotalSize;
+            //                int offset = target - curBlockEnd;
+
+            //                if (block.BranchCode.GetBranchOperandSize() == 1)
+            //                {
+            //                    sbyte btOffset = (sbyte)offset;
+            //                    Debug.Assert(btOffset == offset);
+            //                    GlobalDefine.Instance.ils2.Add(btOffset);
+            //                    //     instruction.cc.Push(btOffset);
+            //                      //  writer.WriteSByte(btOffset);
+            //                      c += sizeof(sbyte);
+            //                }
+            //                else
+            //                {
+            //                    GlobalDefine.Instance.ils2.Add(offset);
+
+            //              //      instruction.cc.Push(offset);
+
+            //           //         writer.WriteInt32(offset);
+            //                    c += sizeof(Int32);
+            //                }
+
+            //            }
+            //            writer.Count += c;
+
+            //            break;
+            //    }
+            //}
+
+
 
             for (var block = leaderBlock; block != null; block = block.NextBlock)
             {
@@ -885,8 +982,8 @@ namespace Microsoft.CodeAnalysis.CodeGen
                         _allocatedILMarkers[i] = new ILMarker() { BlockOffset = blockOffset, AbsoluteOffset = absoluteOffset };
                     }
                 }
-
-              //  block.RegularInstructions?.WriteContentTo(writer);
+                if(block.RegularInstructions!=null)
+                block.RegularInstructions.WriteContentTo(writer);
 
                 switch (block.BranchCode)
                 {
@@ -897,15 +994,10 @@ namespace Microsoft.CodeAnalysis.CodeGen
                         // switch (N, t1, t2... tN)
                         //  IL ==> ILOpCode.Switch < unsigned int32 > < int32 >... < int32 >
 
-                        var c1 = 0;
-                        Instruction instruction1 = new Instruction();
-                        var switchBlock = (SwitchBlock)block;
-                        // writer.Append(ILOpCode.Switch,switchBlock.BranchesCount);
-                        instruction1.opcode = ILOpCode.Switch;
-                        c1 += sizeof(byte);
-                        instruction1.cc.Push(switchBlock.BranchesCount);
-                        c1 += sizeof(uint);
+                        writer.WriteOpCode(ILOpCode.Switch);
 
+                        var switchBlock = (SwitchBlock)block;
+                        writer.WriteUInt32(switchBlock.BranchesCount);
 
                         int switchBlockEnd = switchBlock.Start + switchBlock.TotalSize;
 
@@ -914,20 +1006,15 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
                         foreach (var branchBlock in blockBuilder)
                         {
-                            instruction1.cc.Push(branchBlock.Start - switchBlockEnd);
-                            c1 += sizeof(int);
-                          //  writer.WriteInt32(branchBlock.Start - switchBlockEnd);
+                            writer.WriteInt32(branchBlock.Start - switchBlockEnd);
                         }
-                        writer.Count += c1;
+
                         blockBuilder.Free();
 
                         break;
 
                     default:
-                        //        WriteOpCode(writer, block.BranchCode);
-                        var c = sizeof(byte);
-                        Instruction instruction = new Instruction();
-                        instruction.opcode = block.BranchCode;
+                        writer.WriteOpCode( block.BranchCode);
 
                         if (block.BranchLabel != null)
                         {
@@ -939,28 +1026,21 @@ namespace Microsoft.CodeAnalysis.CodeGen
                             {
                                 sbyte btOffset = (sbyte)offset;
                                 Debug.Assert(btOffset == offset);
-                                instruction.cc.Push(btOffset);
-                                  //  writer.WriteSByte(btOffset);
-                                  c += sizeof(sbyte);
+                                writer.WriteSByte(btOffset);
                             }
                             else
                             {
-                                instruction.cc.Push(offset);
-
-                       //         writer.WriteInt32(offset);
-                                c += sizeof(Int32);
+                                writer.WriteInt32(offset);
                             }
-
                         }
-                        writer.Count += c;
 
                         break;
                 }
             }
 
-            this.RealizedIL = writer.ToImmutableArray();
-            writer.Dispose();
-
+            //            this.Re      writer.Dispose();
+            //alizedIL = writer.ToImmutableArray();
+            RealizedIL= writer.ToIL();
             RealizeSequencePoints();
 
             this.RealizedExceptionHandlers = _scopeManager.GetExceptionHandlerRegions();

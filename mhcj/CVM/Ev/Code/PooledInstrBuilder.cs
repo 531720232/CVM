@@ -50,10 +50,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
             Free();
         }
 
-        internal ImmutableArray<Instruction> ToImmutableArray()
-        {
-        return    _inst.ToImmutableArray();
-        }
+     
         private Instruction c;
       internal Instruction Peek()
         {

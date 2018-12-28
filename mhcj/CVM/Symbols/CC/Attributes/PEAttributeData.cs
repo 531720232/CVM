@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
     /// <summary>
     /// Represents a PE custom attribute
     /// </summary>
-    internal sealed class PEAttributeData : CSharpAttributeData
+    internal sealed class AotAttributeData : CSharpAttributeData
     {
    
         private NamedTypeSymbol _lazyAttributeClass = ErrorTypeSymbol.UnknownResultType; // Indicates uninitialized.
@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE
         private ImmutableArray<KeyValuePair<string, TypedConstant>> _lazyNamedArguments;
         private ThreeState _lazyHasErrors = ThreeState.Unknown;
 
-        internal PEAttributeData()
+        internal AotAttributeData()
         {
           
         }

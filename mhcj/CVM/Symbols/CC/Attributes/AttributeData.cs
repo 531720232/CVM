@@ -92,10 +92,15 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         internal static bool IsTargetEarlyAttribute(NamedTypeSymbol attributeType, AttributeSyntax attributeSyntax, AttributeDescription description)
         {
             Debug.Assert(!attributeType.IsErrorType());
-
-            int argumentCount = (attributeSyntax.ArgumentList != null) ?
-                attributeSyntax.ArgumentList.Arguments.Count((arg) => arg.NameEquals == null) :
-                0;
+            int argumentCount = 0;
+            if (attributeSyntax.ArgumentList!=null)
+            {
+                argumentCount = attributeSyntax.ArgumentList.Arguments.Count((arg) => arg.NameEquals == null);
+            }
+           
+            //int argumentCount = (attributeSyntax.ArgumentList != null) ?
+            //    attributeSyntax.ArgumentList.Arguments.Count((arg) => arg.NameEquals == null) :
+            //    0;
             return AttributeData.IsTargetEarlyAttribute(attributeType, argumentCount, description);
         }
 

@@ -94,7 +94,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
                 var map = _localMap;
                 if (map == null)
                 {
-                    map = new Dictionary<ILocalSymbol, LocalDefinition>((IEqualityComparer<ILocalSymbol>)ReferenceEqualityComparer.Instance);
+                    map = new Dictionary<ILocalSymbol, LocalDefinition>((IEqualityComparer<ILocalSymbol>)ReferenceEqualityComparer<ILocalSymbol>.Instance);
                     _localMap = map;
                 }
 

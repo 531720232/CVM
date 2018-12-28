@@ -10,9 +10,15 @@ namespace Microsoft.CodeAnalysis.CodeGen
         internal CVM.ILOpCode opcode;
         internal Stack<object> cc;
 
+        internal object obj;
+        internal bool Q=false;
         internal void Push(object obj)
         {
-            cc.Push(obj);
+            this.obj=(obj);
+        }
+        public override string ToString()
+        {
+            return "指令->"+opcode+",Token->"+obj;
         }
     }
 }

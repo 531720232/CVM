@@ -751,7 +751,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             // ignore reference aliases if searching for a type from a specific assembly:
             if (assemblyOpt != null)
             {
-           //     assemblies.AddRange(DeclaringCompilation.GetBoundReferenceManager().ReferencedAssemblies);
+
+                assemblies.AddRange(AotAssemblySymbol.Inst);
             }
             else
             {

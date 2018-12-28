@@ -29,6 +29,20 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         internal override bool HasUnifiedReferences => throw new NotImplementedException();
 
+        internal void HasDefaultMemberAttribute(ICustomAttributeProvider handle, out string defaultMemberName)
+        {
+            
+            foreach (DefaultMemberAttribute VARIABLE in handle.GetCustomAttributes(typeof(System.Reflection.DefaultMemberAttribute), false))
+            {
+                defaultMemberName = VARIABLE.MemberName;
+
+                return;
+            }
+            defaultMemberName = null;
+            return;
+
+        }
+
         internal override ICollection<string> TypeNames => types.AsCaseInsensitiveCollection();
 
         internal override ICollection<string> NamespaceNames => ns.AsCaseInsensitiveCollection();
@@ -41,7 +55,73 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         private  AssemblySymbol _assemblySymbol;
 
+        internal bool HasParamsAttribute(ICustomAttributeProvider handle)
+        {
+           return handle.IsDefined(typeof(System.ParamArrayAttribute), false) ;
+        }
+        internal bool HasAttribute(ICustomAttributeProvider handle,Type attr_type,bool inh=false)
+        {
+           
+            return handle.IsDefined(attr_type, inh);
+        }
+        internal bool HasTargetAttribute(System.AttributeTargets targets,ICustomAttributeProvider handle, Type attr_type, bool inh = false)
+        {
+
+            foreach (object VARIABLE in handle.GetCustomAttributes(attr_type,inh))
+            {
+                var atr = VARIABLE.GetType();
+                foreach (AttributeUsageAttribute a1 in atr.GetCustomAttributes(typeof(AttributeUsageAttribute), inh))
+                {
+                    if (a1.ValidOn == targets)
+                    {
+                        return true;
+                    }
+                }
+
+            }
+            return false;
+        }
         public override AssemblySymbol ContainingAssembly =>_assemblySymbol;
+
+        private NamedTypeSymbol _lazySystemTypeSymbol;
+        internal NamedTypeSymbol SystemTypeSymbol
+        {
+            get
+            {
+                if ((object)_lazySystemTypeSymbol == null)
+                {
+                    CVM.AHelper.CompareExchange(ref _lazySystemTypeSymbol,
+                        GetTypeSymbolForWellKnownType(WellKnownType.System_Type),
+                        null);
+                    Debug.Assert((object)_lazySystemTypeSymbol != null);
+                }
+                return _lazySystemTypeSymbol;
+            }
+        }
+        private static bool IsAcceptableSystemTypeSymbol(NamedTypeSymbol candidate)
+        {
+            return candidate.Kind != SymbolKind.ErrorType || !(candidate is MissingMetadataTypeSymbol);
+        }
+        private NamedTypeSymbol GetTypeSymbolForWellKnownType(WellKnownType type)
+        {
+            MetadataTypeName emittedName = MetadataTypeName.FromFullName(type.GetMetadataName(), useCLSCompliantNameArityEncoding: true);
+            // First, check this module
+            NamedTypeSymbol currentModuleResult = this.LookupTopLevelMetadataType(ref emittedName);
+
+            if (IsAcceptableSystemTypeSymbol(currentModuleResult))
+            {
+                // It doesn't matter if there's another of this type in a referenced assembly -
+                // we prefer the one in the current module.
+                return currentModuleResult;
+            }
+
+            // If we didn't find it in this module, check the referenced assemblies
+         
+
+            Debug.Assert((object)currentModuleResult != null);
+            return currentModuleResult;
+        }
+
         public override ModuleMetadata GetMetadata()
         {
             throw new NotImplementedException();
@@ -62,6 +142,95 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             throw new NotImplementedException();
         }
 
+        internal ImmutableArray<CSharpAttributeData> GetCustomAttributesForToken(ICustomAttributeProvider handle, out Attribute filteredOutAttribute1,
+            AttributeDescription filterOut1,
+            out Attribute filteredOutAttribute2,
+            AttributeDescription filterOut2,
+            out Attribute filteredOutAttribute3,
+            AttributeDescription filterOut3,
+            out Attribute filteredOutAttribute4,
+            AttributeDescription filterOut4)
+        {
+       
+            filteredOutAttribute1 = default;
+            filteredOutAttribute2 = default;
+            filteredOutAttribute3 = default;
+            filteredOutAttribute4 = default;
+            ArrayBuilder<CSharpAttributeData> customAttributesBuilder = null;
+
+            try
+            {
+                foreach (Attribute customAttributeHandle in handle.GetCustomAttributes(false))
+                {
+                    // It is important to capture the last application of the attribute that we run into,
+                    // it makes a difference for default and constant values.
+
+                    if (matchesFilter(customAttributeHandle, filterOut1))
+                    {
+                        filteredOutAttribute1 = customAttributeHandle;
+                        continue;
+                    }
+
+                    if (matchesFilter(customAttributeHandle, filterOut2))
+                    {
+                        filteredOutAttribute2 = customAttributeHandle;
+                        continue;
+                    }
+
+                    if (matchesFilter(customAttributeHandle, filterOut3))
+                    {
+                        filteredOutAttribute3 = customAttributeHandle;
+                        continue;
+                    }
+
+                    if (matchesFilter(customAttributeHandle, filterOut4))
+                    {
+                        filteredOutAttribute4 = customAttributeHandle;
+                        continue;
+                    }
+
+                    if (customAttributesBuilder == null)
+                    {
+                        customAttributesBuilder = ArrayBuilder<CSharpAttributeData>.GetInstance();
+                    }
+
+                    customAttributesBuilder.Add(new AotAttributeData(this, customAttributeHandle));
+                }
+            }
+            catch { }
+
+            if (customAttributesBuilder != null)
+            {
+                return customAttributesBuilder.ToImmutableAndFree();
+            }
+
+            return ImmutableArray<CSharpAttributeData>.Empty;
+
+         
+        }
+
+        internal void LoadCustomAttributes(ICustomAttributeProvider token, ref ImmutableArray<CSharpAttributeData> customAttributes)
+        {
+            var loaded = GetCustomAttributesForToken(token);
+            ImmutableInterlocked.InterlockedInitialize(ref customAttributes, loaded);
+        }
+        internal ImmutableArray<CSharpAttributeData> GetCustomAttributesForToken(ICustomAttributeProvider token)
+        {
+            // Do not filter anything and therefore ignore the out results
+            return GetCustomAttributesForToken(token, out _, default);
+        }
+        internal ImmutableArray<CSharpAttributeData> GetCustomAttributesForToken(ICustomAttributeProvider token,
+            out Attribute filteredOutAttribute1,
+            AttributeDescription filterOut1)
+        {
+            return GetCustomAttributesForToken(token, out filteredOutAttribute1, filterOut1, out _, default, out _, default, out _, default);
+        }
+
+        bool matchesFilter(Attribute handle, AttributeDescription filter)
+        {
+         
+            return handle.GetType().FullName==filter.FullName;
+        }
         internal override NamedTypeSymbol LookupTopLevelMetadataType(ref MetadataTypeName emittedName)
         {
             NamedTypeSymbol result;
@@ -120,7 +289,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             try
             {
 
-                var ts = typeof(object).Assembly.GetTypes();
+                var ts =CVM.GlobalDefine.Instance.clr_types;
                 var full = new List<string>();
                 foreach(var t in ts)
                 {
@@ -147,7 +316,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             try
             {
-                var allTypeDefs = typeof(object).Assembly.GetTypes();
+                var allTypeDefs = CVM.GlobalDefine.Instance.clr_types;
                 var typeNames =
                     from typeDef in allTypeDefs
                     let metadataName = typeDef.Name
@@ -337,7 +506,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        internal bool HasDecimalConstantAttribute(MemberInfo handle, out ConstantValue defaultValue)
+        internal bool HasDecimalConstantAttribute(ICustomAttributeProvider handle, out ConstantValue defaultValue)
         {
             defaultValue = ConstantValue.Bad;
             try
@@ -360,6 +529,30 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
             }
             return false;
+        }
+
+        internal bool HasDateTimeConstantAttribute(ICustomAttributeProvider _handle, out ConstantValue value)
+        {
+            value = ConstantValue.Bad;
+            foreach (System.Runtime.CompilerServices.DateTimeConstantAttribute a in _handle.GetCustomAttributes(typeof(System.Runtime.CompilerServices.DateTimeConstantAttribute),false))
+            {
+                try
+                {
+                    DateTime w = new DateTime((long)a.Value);
+                    value = ConstantValue.Create(w);
+                    return true ;
+
+                }
+                catch
+                {
+
+                }
+                  
+            }
+
+
+                return false;
+
         }
 
         internal ConstantValue GetConstantFieldValue(FieldInfo handle)
@@ -401,7 +594,45 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         
         }
+        internal ConstantValue GetConstantValue(object handle)
+        {
+            switch (handle)
+            {
+                case bool b:
+                    return ConstantValue.Create(b);
+                case char c:
+                    return ConstantValue.Create(c);
+                case sbyte s:
+                    return ConstantValue.Create(s);
+                case Int16 it16:
+                    return ConstantValue.Create(it16);
+                case Int32 i32:
+                    return ConstantValue.Create(i32);
+                case Int64 i64:
+                    return ConstantValue.Create(i64);
+                case byte be:
+                    return ConstantValue.Create(be);
+                case UInt16 u16:
+                    return ConstantValue.Create(u16);
+                case UInt32 u32:
+                    return ConstantValue.Create(u32);
+                case UInt64 u64:
+                    return ConstantValue.Create(u64);
+                case Single sg:
+                    return ConstantValue.Create(sg);
+                case Double de:
+                    return ConstantValue.Create(de);
+                case String sr:
+                    return ConstantValue.Create(sr);
+                case null:
+                    return ConstantValue.Null;
 
+                default:
+
+                    return ConstantValue.Bad;
+            }
+
+        }
         private struct TypeDefToNamespace
         {
             internal readonly Type TypeDef;
@@ -415,7 +646,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         }
         private IEnumerable<TypeDefToNamespace> GetTypeDefsOrThrow(bool topLevelOnly)
         {
-            foreach (var typeDef in typeof(object).Assembly.GetTypes())
+            foreach (var typeDef in CVM.GlobalDefine.Instance.clr_types)
             {
               
 

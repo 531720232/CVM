@@ -46,39 +46,39 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 { "System.Void System.Diagnostics.Debug.Assert(System.Boolean, System.String, System.String, System.Object[])", Array(default, AssertsTrue, default, default, default) },
             }.ToImmutableDictionary();
 
-        //internal static string MakeMethodKey(PEMethodSymbol method, ParamInfo<TypeSymbol>[] paramInfo)
-        //{
-        //    var pooledBuilder = PooledStringBuilder.GetInstance();
+        internal static string MakeMethodKey(AotMethodSymbol method, ParamInfo<TypeSymbol>[] paramInfo)
+        {
+            var pooledBuilder = PooledStringBuilder.GetInstance();
 
-        //    StringBuilder builder = pooledBuilder.Builder;
-        //    Add(paramInfo[0].Type, builder);
-        //    builder.Append(' ');
+            StringBuilder builder = pooledBuilder.Builder;
+            Add(paramInfo[0].Type, builder);
+            builder.Append(' ');
 
-        //    Add(method.ContainingType, builder);
-        //    builder.Append('.');
+            Add(method.ContainingType, builder);
+            builder.Append('.');
 
-        //    builder.Append(method.Name);
-        //    builder.Append('(');
+            builder.Append(method.Name);
+            builder.Append('(');
 
-        //    for (int i = 1; i < paramInfo.Length; i++)
-        //    {
-        //        Add(paramInfo[i].Type, builder);
-        //        if (i < paramInfo.Length - 1)
-        //        {
-        //            builder.Append(", ");
-        //        }
-        //    }
+            for (int i = 1; i < paramInfo.Length; i++)
+            {
+                Add(paramInfo[i].Type, builder);
+                if (i < paramInfo.Length - 1)
+                {
+                    builder.Append(", ");
+                }
+            }
 
-        //    builder.Append(')');
-        //    return pooledBuilder.ToStringAndFree();
+            builder.Append(')');
+            return pooledBuilder.ToStringAndFree();
 
-        //    // https://github.com/dotnet/roslyn/issues/29821: Many cases are not yet handled
-        //    // generic type args
-        //    // ref kind
-        //    // 'this'
-        //    // static vs. instance
-        //    // use assembly qualified name format (used in metadata) rather than symbol display?
-        //}
+            // https://github.com/dotnet/roslyn/issues/29821: Many cases are not yet handled
+            // generic type args
+            // ref kind
+            // 'this'
+            // static vs. instance
+            // use assembly qualified name format (used in metadata) rather than symbol display?
+        }
 
         internal static string MakeMethodKey(MethodSymbol method)
         {

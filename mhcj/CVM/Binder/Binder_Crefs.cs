@@ -776,7 +776,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                         continue;
                 }
 
-                if (MemberSignatureComparer.CrefComparer.Equals(signatureMember, candidate))
+                if (MemberSignatureComparer<Symbol>.CrefComparer.Equals(signatureMember, candidate))
                 {
                     Debug.Assert(candidate.GetMemberArity() != 0 || candidate.Name == WellKnownMemberNames.InstanceConstructorName || arity == 0,
                         "Can only have a 0-arity, non-constructor candidate if the desired arity is 0.");

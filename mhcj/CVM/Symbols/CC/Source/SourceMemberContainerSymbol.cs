@@ -1441,8 +1441,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             CheckIndexerNameConflicts(diagnostics, membersByName);
 
             // key and value will be the same object in these dictionaries.
-            var methodsBySignature = new Dictionary<SourceMemberMethodSymbol, SourceMemberMethodSymbol>((IEqualityComparer<SourceMemberMethodSymbol>)MemberSignatureComparer.DuplicateSourceComparer);
-            var conversionsAsMethods = new Dictionary<SourceMemberMethodSymbol, SourceMemberMethodSymbol>((IEqualityComparer<SourceMemberMethodSymbol>)MemberSignatureComparer.DuplicateSourceComparer);
+            var methodsBySignature = new Dictionary<SourceMemberMethodSymbol, SourceMemberMethodSymbol>((IEqualityComparer<SourceMemberMethodSymbol>)MemberSignatureComparer<SourceMemberMethodSymbol>.DuplicateSourceComparer);
+            var conversionsAsMethods = new Dictionary<SourceMemberMethodSymbol, SourceMemberMethodSymbol>((IEqualityComparer<SourceMemberMethodSymbol>)MemberSignatureComparer<SourceMemberMethodSymbol>.DuplicateSourceComparer);
             var conversionsAsConversions = new HashSet<SourceUserDefinedConversionSymbol>(ConversionSignatureComparer.Comparer);
 
             // SPEC: The signature of an operator must differ from the signatures of all other
@@ -1676,7 +1676,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 }
             }
 
-            var indexersBySignature = new Dictionary<PropertySymbol, PropertySymbol>((IEqualityComparer<PropertySymbol>)MemberSignatureComparer.DuplicateSourceComparer);
+            var indexersBySignature = new Dictionary<PropertySymbol, PropertySymbol>();//((IEqualityComparer<PropertySymbol>)MemberSignatureComparer.DuplicateSourceComparer);
 
             // Note: Can't assume that all indexers are called WellKnownMemberNames.Indexer because 
             // they may be explicit interface implementations.
@@ -2494,7 +2494,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     {
                         diagnostics.Add(ErrorCode.ERR_PartialMethodMustHaveLatent, method.Locations[0], method);
                     }
-                    else if ((object)method.OtherPartOfPartial != null && MemberSignatureComparer.ConsideringTupleNamesCreatesDifference(method, method.OtherPartOfPartial))
+                    else if ((object)method.OtherPartOfPartial != null && MemberSignatureComparer<Symbol>.ConsideringTupleNamesCreatesDifference(method, method.OtherPartOfPartial))
                     {
                         diagnostics.Add(ErrorCode.ERR_PartialMethodInconsistentTupleNames, method.Locations[0], method, method.OtherPartOfPartial);
                     }

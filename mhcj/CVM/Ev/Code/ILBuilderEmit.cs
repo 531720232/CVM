@@ -31,12 +31,14 @@ namespace Microsoft.CodeAnalysis.CodeGen
             Debug.Assert(!code.IsControlTransfer(),
                 "Control transferring opcodes should not be emitted directly. Use special methods such as EmitRet().");
 
-            PooledInstrBuilder.GetInstance().Next();
+            // PooledInstrBuilder.GetInstance().Next();
             //   WriteOpCode(this.GetCurrentWriter(), code);
-         var pw=   PooledInstrBuilder.GetInstance().Peek();
-            pw.opcode = code;
+            //var pw=   PooledInstrBuilder.GetInstance().Peek();
+            //   pw.opcode = code;
+            //        GlobalDefine.Instance.ils.Add(code);
+            GetCurrentWriter().WriteOpCode(code);
             _emitState.AdjustStack(stackAdjustment);
-            PooledInstrBuilder.GetInstance().Next();
+         //   PooledInstrBuilder.GetInstance().Next();
             _emitState.InstructionAdded();
             
 
@@ -44,9 +46,10 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
         internal void EmitToken(string value)
         {
-         var token=  module?.GetFakeStringTokenForIL(value) ;
-            PooledInstrBuilder.GetInstance().PeekPush(token);
-
+         var token=  module?.GetFakeStringTokenForIL(value) ?? 0xFFFF;
+            //    GetCurrentWriter().WriteUInt32(token);
+            //     PooledInstrBuilder.GetInstance().PeekPush(token);
+            GetCurrentWriter().WriteUInt32E(token, value);
         }
 
         internal void EmitToken(Cci.IReference value, SyntaxNode syntaxNode, DiagnosticBag diagnostics, bool encodeAsRawToken = false)
@@ -57,7 +60,9 @@ namespace Microsoft.CodeAnalysis.CodeGen
             {
           //      token |= Cci.MetadataWriter.LiteralMethodDefinitionToken;
             }
-            PooledInstrBuilder.GetInstance().PeekPush(token);
+            this.GetCurrentWriter().WriteUInt32E(token, value);
+
+            //     PooledInstrBuilder.GetInstance().PeekPush(token);
         }
 
         internal void EmitGreatestMethodToken()
@@ -74,7 +79,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
         internal void EmitSourceDocumentIndexToken(Cci.DebugSourceDocument document)
         {
-            PooledInstrBuilder.GetInstance().PeekPush((module?.GetSourceDocumentIndexForIL(document) ?? 0xFFFF));// | Cci.MetadataWriter.SourceDocumentIndex);
+            this.GetCurrentWriter().WriteUInt32((module?.GetSourceDocumentIndexForIL(document) ?? 0xFFFF));// | Cci.MetadataWriter.SourceDocumentIndex);
         }
 
         internal void EmitArrayBlockInitializer(ImmutableArray<byte> data, SyntaxNode syntaxNode, DiagnosticBag diagnostics)
@@ -217,7 +222,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
             if (code != ILOpCode.Nop)
             {
-                PooledInstrBuilder.GetInstance().Next();
+              // PooledInstrBuilder.GetInstance().Next();
                 _emitState.InstructionAdded();
             }
 
@@ -331,7 +336,10 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
             var block = this.GetCurrentBlock();
             block.SetBranchCode(ILOpCode.Ret);
-            PooledInstrBuilder.GetInstance().Next();
+
+            //  PooledInstrBuilder.GetInstance().Next();
+
+       
 
             _emitState.InstructionAdded();
             this.EndBlock();
@@ -349,7 +357,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
                 block.SetBranchCode(ILOpCode.Throw);
                 _emitState.AdjustStack(-1);
             }
-            PooledInstrBuilder.GetInstance().Next();
+            //    PooledInstrBuilder.GetInstance().Next();
             _emitState.InstructionAdded();
             this.EndBlock();
         }
@@ -731,34 +739,48 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
         private void EmitInt8(sbyte int8)
         {
-            PooledInstrBuilder.GetInstance().PeekPush(int8);
+    //        GlobalDefine.Instance.ils.Add(int8);
+            this.GetCurrentWriter().WriteSByte(int8);
+
+            //    PooledInstrBuilder.GetInstance().PeekPush(int8);
         }
 
         private void EmitInt32(int int32)
         {
-            PooledInstrBuilder.GetInstance().PeekPush(int32);
+            //            GlobalDefine.Instance.ils.Add(int32);
+            this.GetCurrentWriter().WriteInt32(int32);
+            //      PooledInstrBuilder.GetInstance().PeekPush(int32);
         }
 
         private void EmitInt64(long int64)
         {
-            PooledInstrBuilder.GetInstance().PeekPush(int64);
+            //     GlobalDefine.Instance.ils.Add(int64);
+            this.GetCurrentWriter().WriteInt64(int64);
+
+            //  ..    PooledInstrBuilder.GetInstance().PeekPush(int64);
         }
 
         private void EmitFloat(float floatValue)
         {
+          
+
             int int32 = BitConverter.ToInt32(BitConverter.GetBytes(floatValue), 0);
-            PooledInstrBuilder.GetInstance().PeekPush(int32);
+            this.GetCurrentWriter().WriteInt32(int32);
+
         }
 
         private void EmitDouble(double doubleValue)
         {
             long int64 = BitConverter.DoubleToInt64Bits(doubleValue);
-            PooledInstrBuilder.GetInstance().PeekPush(int64);
+            //       PooledInstrBuilder.GetInstance().PeekPush(int64);
+            this.GetCurrentWriter().WriteInt64(int64);
+
+
         }
 
-    
 
-        private PooledInstrBuilder GetCurrentWriter()
+
+        private CVM_ILCC GetCurrentWriter()
         {
             return this.GetCurrentBlock().Writer;
         }

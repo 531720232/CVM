@@ -4,13 +4,13 @@ using CVM.Collections.Immutable;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using CVM;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
     internal class AotAttributeData : CSharpAttributeData
     {
         private readonly System.Attribute _handle;
-        private readonly System.Reflection.ConstructorInfo _ci;
         private NamedTypeSymbol _lazyAttributeClass = ErrorTypeSymbol.UnknownResultType; // Indicates uninitialized.
         private MethodSymbol _lazyAttributeConstructor;
         private ImmutableArray<TypedConstant> _lazyConstructorArguments;
@@ -20,11 +20,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private object handle;
 
 
-        public AotAttributeData(AotModuleSymbol containingAotModuleSymbol, System.Attribute handle,System.Reflection.ConstructorInfo ci)
+        public AotAttributeData(AotModuleSymbol containingAotModuleSymbol, System.Attribute handle)
         {
+           
             this.containingAotModuleSymbol = containingAotModuleSymbol;
             this.handle = handle;
-            this._ci = ci;
 
         }
         public override NamedTypeSymbol AttributeClass
@@ -32,8 +32,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get
             {
 
-             
 
+              
+              
                 EnsureClassAndConstructorSymbolsAreLoaded();
                 return _lazyAttributeClass;
             }
@@ -66,43 +67,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             if (_lazyConstructorArguments.IsDefault || _lazyNamedArguments.IsDefault)
             {
-           //     TypedConstant[] lazyConstructorArguments = null;
-             //   KeyValuePair<string, TypedConstant>[] lazyNamedArguments = null;
-
-             var   lazyConstructorArguments = new List<TypedConstant>();
-            var    lazyNamedArguments = new List<KeyValuePair<string, TypedConstant>>();
-             var ts=   _ci.GetParameters();
-                var mo = containingAotModuleSymbol;
-                foreach(var p in ts)
-                {
-                    TypedConstant t1;
-                    var t = p.GetType();
-                    var n = p.Name;
-                //    var typ=new TypedConstant(mo.TypeHandleToTypeMap)
-               
-                  if ( p.GetType().IsArray)
-                    {
-
-                        
-                    }
-                    else
-                    {
-                      //  t1 = new TypedConstant(mo.TypeHandleToTypeMap[t]);
-                    }
-                    
-                }
-                //if (!_decoder.GetCustomAttribute(_handle, out lazyConstructorArguments, out lazyNamedArguments))
-                //{
-                //    _lazyHasErrors = ThreeState.True;
-                //}
-
-                Debug.Assert(lazyConstructorArguments != null && lazyNamedArguments != null);
-
-                ImmutableInterlocked.InterlockedInitialize(ref _lazyConstructorArguments,
-                    ImmutableArray.Create<TypedConstant>(lazyConstructorArguments.ToArray()));
-
-                ImmutableInterlocked.InterlockedInitialize(ref _lazyNamedArguments,
-                    ImmutableArray.Create<KeyValuePair<string, TypedConstant>>(lazyNamedArguments.ToArray()));
+          
             }
         }
 
@@ -126,12 +91,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             {
                 TypeSymbol attributeClass;
                 MethodSymbol attributeConstructor=default;
-
+        
                 
             if(containingAotModuleSymbol.TypeHandleToTypeMap.TryGetValue(_handle.GetType(),out attributeClass))
                     {
-                    var mod = new AotMethodSymbol(_ci);
-                    attributeConstructor = mod;
+              
                 }
                 else
                 {

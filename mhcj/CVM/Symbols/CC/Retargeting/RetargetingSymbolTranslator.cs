@@ -1085,7 +1085,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols.Retargeting
                 MethodSymbol oldAttributeCtor = oldAttribute.AttributeConstructor;
                 MethodSymbol newAttributeCtor = (object)oldAttributeCtor == null ?
                     null :
-                    Retarget(oldAttributeCtor,(IEqualityComparer<MethodSymbol>) MemberSignatureComparer.RetargetedExplicitImplementationComparer);
+                    Retarget(oldAttributeCtor,(IEqualityComparer<MethodSymbol>) MemberSignatureComparer<MethodSymbol>.RetargetedExplicitImplementationComparer);
 
                 NamedTypeSymbol oldAttributeType = oldAttribute.AttributeClass;
                 NamedTypeSymbol newAttributeType;

@@ -74,14 +74,14 @@ namespace Microsoft.CodeAnalysis.CodeGen
             //parent builder
             internal ILBuilder builder;
 
-            private PooledInstrBuilder _lazyRegularInstructions;
-            public PooledInstrBuilder Writer
+            private CVM_ILCC _lazyRegularInstructions;
+            public CVM_ILCC Writer
             {
                 get
                 {
                     if (_lazyRegularInstructions == null)
                     {
-                        _lazyRegularInstructions = PooledInstrBuilder.GetInstance();// CVM_Instructions.GetInstance();
+                        _lazyRegularInstructions = CVM_ILCC.GetInstance();// CVM_Instructions.GetInstance();
                     }
 
                     return _lazyRegularInstructions;
@@ -153,7 +153,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
             {
                 if (_lazyRegularInstructions != null)
                 {
-                    _lazyRegularInstructions.Dispose();
+                  //  _lazyRegularInstructions.Dispose();
                     _lazyRegularInstructions = null;
                 }
             }
@@ -214,6 +214,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
             {
                 this.SetBranch(newLabel, branchCode);
                 this.RevBranchCode = revBranchCode;
+          
             }
 
             public void SetBranch(object newLabel, ILOpCode branchCode)
@@ -249,14 +250,14 @@ namespace Microsoft.CodeAnalysis.CodeGen
             /// <summary>
             /// Instructions that are not branches.
             /// </summary>
-            public PooledInstrBuilder RegularInstructions => _lazyRegularInstructions;
+            public CVM_ILCC RegularInstructions => _lazyRegularInstructions;
 
             /// <summary>
             /// The block contains only the final branch or nothing at all
             /// </summary>
             public bool HasNoRegularInstructions => _lazyRegularInstructions == null;
 
-            public int RegularInstructionsLength => _lazyRegularInstructions.Count;
+            public int RegularInstructionsLength => _lazyRegularInstructions?.Count ?? 0;
 
             /// <summary>
             /// Updates position of the current block to account for shorter sizes of previous blocks.
@@ -527,17 +528,15 @@ namespace Microsoft.CodeAnalysis.CodeGen
                     {
                         // becomes a pop block
                         this.SetBranch(null, ILOpCode.Nop);
-                        this.Writer.Append(new Instruction { opcode = ILOpCode.Pop });
-                        Writer.Count += sizeof(byte);
+                        this.Writer.WriteOpCode(ILOpCode.Pop);
                         // curBranchCode.Size() + curBranchCode.BranchOperandSize() - ILOpCode.Pop.Size()
                         delta -= (curBranchCode.Size() + curBranchCode.GetBranchOperandSize() - 1);
 
                         if (curBranchCode.IsRelationalBranch())
                         {
-                            this.Writer.Append(new Instruction { opcode = ILOpCode.Pop });
-                            Writer.Count += sizeof(byte);
-
+                            this.Writer.WriteOpCode(ILOpCode.Pop);
                             delta += 1;
+
                         }
 
                         return true;

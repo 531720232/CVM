@@ -27,9 +27,16 @@ namespace CVM
                 {
                     a = b;
                 }
-                if (a.Equals(c))
+                try
                 {
-                    a = b;
+                    if (a.Equals(c))
+                    {
+                        a = b;
+                    }
+                }
+                catch
+                {
+
                 }
              
 
