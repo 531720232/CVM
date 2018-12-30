@@ -504,8 +504,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Runtime
 
         private void CreateUserStringIndices()
         {
-            strsmap = new Dictionary<int, string>();
-            int i = 0;
+            strsmap = new Dictionary<uint, string>();
+uint i = 0;
             foreach(var str in module.GetStrings())
             {
                 strsmap.Add(i, str);
@@ -514,10 +514,22 @@ namespace Microsoft.CodeAnalysis.CSharp.Runtime
            
         }
 
-        private Dictionary<int, string> strsmap;
+        private Dictionary<uint, string> strsmap;
         private IReference[] _pseudoSymbolTokenToReferenceMap;
 
 
+       public string GetString(uint token)
+        {
+            if(strsmap.ContainsKey(token))
+            {
+                return strsmap[token];
+            }
+            return null;
+        }
+        public IReference GetToken(uint token)
+        {
+            return _pseudoSymbolTokenToReferenceMap[token];
+        }
         /// <summary>
         /// Invokes a specific method
         /// </summary>

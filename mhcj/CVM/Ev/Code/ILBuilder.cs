@@ -1020,17 +1020,21 @@ namespace Microsoft.CodeAnalysis.CodeGen
                             int target = block.BranchBlock.Start;
                             int curBlockEnd = block.Start + block.TotalSize;
                             int offset = target - curBlockEnd;
+                           
 
                             if (block.BranchCode.GetBranchOperandSize() == 1)
                             {
                                 sbyte btOffset = (sbyte)offset;
                                 Debug.Assert(btOffset == offset);
-                                writer.WriteSByte(btOffset);
+                                   writer.WriteSByte(btOffset);
+                                
+                                writer.WriteOpCode(ILOpCode.NullStack);//添加空栈跳跃
                             }
                             else
                             {
                                 writer.WriteInt32(offset);
                             }
+                          
                         }
 
                         break;

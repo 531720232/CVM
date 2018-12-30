@@ -224,5 +224,6 @@ namespace CVM
         Sizeof = 0xfe1c,
         Refanytype = 0xfe1d,
         Readonly = 0xfe1e,
+        NullStack = 0xfe1f
     }
 }

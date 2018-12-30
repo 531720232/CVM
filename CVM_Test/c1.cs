@@ -8,7 +8,7 @@ public class fyindex{
 		var c="fyindex"+i;
 		var ge=new int[1,1];
 		var d=c[1];
-		switch(1)
+		switch(i)
 		{
 			case 2:
 			

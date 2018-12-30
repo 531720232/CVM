@@ -93,7 +93,7 @@ namespace CVM
         internal void WriteUInt32E(uint token, object value)
         {
             CountUp(u32Size);
-            objs.Add(value);
+            objs.Add(token);//.Add(value);
         }
 
         internal ImmutableArray<Instruction> ToIL()
