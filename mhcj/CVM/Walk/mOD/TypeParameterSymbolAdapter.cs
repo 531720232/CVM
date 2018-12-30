@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Roslyn.Utilities;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using CVM.Collections.Immutable;
-using Mono.Cecil;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -39,9 +37,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return Cci.PrimitiveTypeCode.NotPrimitive; }
         }
 
-        TypeDefinition Cci.ITypeReference.TypeDef
+        System.Type Cci.ITypeReference.TypeDef
         {
-            get { return default(TypeDefinition); }
+            get { return default(System.Type); }
         }
 
         Cci.IGenericMethodParameter Cci.IGenericParameter.AsGenericMethodParameter

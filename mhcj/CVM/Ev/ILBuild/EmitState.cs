@@ -2,16 +2,15 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.CodeGen
 {
-  
-        /// <summary>
-        /// Abstract Execution state. 
-        /// If we know something interesting about IL stream we put it here.
-        /// </summary>
-        internal struct EmitState
+
+    /// <summary>
+    /// Abstract Execution state. 
+    /// If we know something interesting about IL stream we put it here.
+    /// </summary>
+    internal struct EmitState
         {
             private int _maxStack;
             private int _curStack;

@@ -15,7 +15,6 @@
 #define REFERENCE_STATE
 #endif
 
-using System;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;

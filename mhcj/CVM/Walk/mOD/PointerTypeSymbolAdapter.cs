@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.Emit;
-using Mono.Cecil;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -43,9 +42,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             get { return Cci.PrimitiveTypeCode.Pointer; }
         }
 
-        TypeDefinition Cci.ITypeReference.TypeDef
+        System.Type Cci.ITypeReference.TypeDef
         {
-            get { return default(TypeDefinition); }
+            get { return default(System.Type); }
         }
 
         Cci.IGenericMethodParameterReference Cci.ITypeReference.AsGenericMethodParameterReference

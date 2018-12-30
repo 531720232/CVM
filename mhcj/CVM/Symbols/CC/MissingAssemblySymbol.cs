@@ -3,12 +3,7 @@
 using System;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols

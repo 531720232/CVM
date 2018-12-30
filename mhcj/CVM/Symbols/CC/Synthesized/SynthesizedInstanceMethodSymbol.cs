@@ -2,7 +2,6 @@
 
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols

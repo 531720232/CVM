@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Rv1 = System.Int32;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
-   internal class A2Factory
+    internal class A2Factory
     {
     private static CVM.Collections.Concurrent.ConcurrentDictionary<Guid, List<string>> usings = new CVM.Collections.Concurrent.ConcurrentDictionary<Guid, List<string>>();
 

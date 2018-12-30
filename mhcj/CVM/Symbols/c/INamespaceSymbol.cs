@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis
 {

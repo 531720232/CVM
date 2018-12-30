@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using System.IO;
 

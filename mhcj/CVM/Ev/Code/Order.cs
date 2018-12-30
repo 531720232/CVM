@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.CodeAnalysis.CodeGen
 {
-  internal  class Instruction
+    internal  class Instruction
     {
         internal CVM.ILOpCode opcode;
         internal Stack<object> cc;

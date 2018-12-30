@@ -15,8 +15,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Collections;
 using System;
 
@@ -947,7 +945,7 @@ namespace CVM.Collections.Concurrent
                 try
                 {
                     // Acquire all locks
-                    AcquireAllLocks(ref acquiredLocks);
+       //    ..         AcquireAllLocks(ref acquiredLocks);
 
                     return GetCountInternal();
                 }

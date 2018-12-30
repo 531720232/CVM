@@ -3,13 +3,10 @@
 using CVM.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.PooledObjects;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Roslyn.Utilities;
 using Microsoft.CodeAnalysis.CodeGen;
-using Microsoft.CodeAnalysis.Symbols;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {

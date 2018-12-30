@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.Emit;
-using Mono.Cecil;
 using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Emit
@@ -73,11 +72,11 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             }
         }
 
-        TypeDefinition Cci.ITypeReference.TypeDef
+        System.Type Cci.ITypeReference.TypeDef
         {
             get
             {
-                return default(TypeDefinition);
+                return default(System.Type);
             }
         }
 

@@ -3,9 +3,7 @@
 using System;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
-using System.Reflection;
 using Roslyn.Utilities;
-using Mono.Cecil;
 
 namespace Microsoft.CodeAnalysis.Emit
 {
@@ -80,11 +78,11 @@ namespace Microsoft.CodeAnalysis.Emit
             }
         }
 
-        TypeDefinition Cci.ITypeReference.TypeDef
+        System.Type Cci.ITypeReference.TypeDef
         {
             get
             {
-                return default(TypeDefinition);
+                return default(System.Type);
             }
         }
 

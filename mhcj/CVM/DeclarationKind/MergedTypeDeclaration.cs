@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
-using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;

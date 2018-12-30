@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Roslyn.Utilities;
 using EmitContext = Microsoft.CodeAnalysis.Emit.EmitContext;
-using Mono.Cecil;
 
 namespace Microsoft.Cci
 {
@@ -14,9 +12,9 @@ namespace Microsoft.Cci
     /// </summary>
     internal class RootModuleType : INamespaceTypeDefinition
     {
-        public TypeDefinition TypeDef
+        public System.Type TypeDef
         {
-            get { return default(TypeDefinition); }
+            get { return default(System.Type); }
         }
 
         public ITypeDefinition ResolvedType

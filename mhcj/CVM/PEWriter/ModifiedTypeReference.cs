@@ -5,7 +5,6 @@ using CVM.Collections.Immutable;
 using System.Diagnostics;
 using Roslyn.Utilities;
 using EmitContext = Microsoft.CodeAnalysis.Emit.EmitContext;
-using Mono.Cecil;
 
 namespace Microsoft.Cci
 {
@@ -60,7 +59,7 @@ namespace Microsoft.Cci
             get { return PrimitiveTypeCode.NotPrimitive; }
         }
 
-        TypeDefinition ITypeReference.TypeDef
+        System.Type ITypeReference.TypeDef
         {
             get { throw ExceptionUtilities.Unreachable; }
         }

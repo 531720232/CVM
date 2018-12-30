@@ -2,11 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Roslyn.Utilities;
 using System.Diagnostics;
-using CVM.Collections.Immutable;
 
 namespace Microsoft.CodeAnalysis.CSharp.Emit
 {

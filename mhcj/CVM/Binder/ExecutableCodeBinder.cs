@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis.PooledObjects;
 using System;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {

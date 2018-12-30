@@ -7,12 +7,10 @@ using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Roslyn.Utilities;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Mono.Cecil;
 
 namespace Microsoft.CodeAnalysis.CodeGen
 {
@@ -535,7 +533,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
 
         public Cci.PrimitiveTypeCode TypeCode => Cci.PrimitiveTypeCode.NotPrimitive;
 
-        public TypeDefinition TypeDef
+        public Type TypeDef
         {
             get { throw ExceptionUtilities.Unreachable; }
         }

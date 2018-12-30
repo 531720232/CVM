@@ -4,7 +4,6 @@ using CVM;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
-using System.Threading;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {

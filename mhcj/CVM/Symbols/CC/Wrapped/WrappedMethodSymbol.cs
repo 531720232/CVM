@@ -2,8 +2,6 @@
 
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
-using System.Globalization;
-using System.Threading;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {

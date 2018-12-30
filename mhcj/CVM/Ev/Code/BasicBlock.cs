@@ -3,10 +3,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using CVM;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CodeGen
 {

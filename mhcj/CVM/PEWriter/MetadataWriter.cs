@@ -1,14 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.Cci
 {
-   internal class MetadataWriter
+    internal class MetadataWriter
     {
         public static string GetMangledName(INamedTypeReference namedType)
         {

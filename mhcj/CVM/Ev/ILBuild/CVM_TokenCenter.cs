@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Microsoft.CodeAnalysis.CodeGen
+﻿namespace Microsoft.CodeAnalysis.CodeGen
 {
- internal   class CVM_TokenCenter
+    internal   class CVM_TokenCenter
     {
       static  CVM_TokenCenter center;
        internal static CVM_TokenCenter Instance

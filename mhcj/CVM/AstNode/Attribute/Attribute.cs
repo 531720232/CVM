@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Microsoft.CodeAnalysis.CSharp.AstNode
+﻿namespace Microsoft.CodeAnalysis.CSharp.AstNode
 {
     internal class A_Attribute:Node
     {

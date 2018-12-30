@@ -4,11 +4,9 @@ using System;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Emit
 {

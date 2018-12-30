@@ -3,7 +3,6 @@
 using System;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis
 {

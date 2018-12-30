@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 
 namespace CVM
 {
@@ -29,18 +30,24 @@ namespace CVM
         {
             defines = new List<string>();
             AutoReg();
-          var bd=  clr_types.Contains(typeof( System.Data.DataColumn));
+        }
+        Assembly[] loadedAssemblies;
+        public Assembly[] GetAssemblies()
+        {
+            return loadedAssemblies;
         }
         private void AutoReg()
         {
-            var asd = System.AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var a in asd)
+            loadedAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var a in loadedAssemblies)
             {
                 foreach (var b in a.GetTypes())
                 {
                     RegType(b);
                 }
             }
+            RegType(typeof(System.Action));//不知道为什么会被丢掉所以再注册一次
+          
         }
         public void InDebug()
         {
@@ -64,6 +71,7 @@ namespace CVM
             {
                 clr_types.Add(type);
             }
+
         }
     }
 }

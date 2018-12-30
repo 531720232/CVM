@@ -6,20 +6,16 @@ using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Threading;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
-using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 using CommonAssemblyWellKnownAttributeData = Microsoft.CodeAnalysis.CommonAssemblyWellKnownAttributeData<Microsoft.CodeAnalysis.CSharp.Symbols.NamedTypeSymbol>;
-using Mono.Cecil;
 using CVM;
 using CVM.Linq;
 using CVM.Reflection;
+using System.Reflection;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -398,7 +394,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             get
             {
-                return AssemblyAlgorithmIdAttributeSetting ?? AssemblyHashAlgorithm.SHA1;
+                return AssemblyAlgorithmIdAttributeSetting ?? AssemblyHashAlgorithm.Sha1;
             }
         }
 
@@ -411,7 +407,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                 var data = GetSourceDecodedWellKnownAttributeData();
                 if (data != null)
                 {
-                    fieldValue = AssemblyHashAlgorithm.SHA1;
+                    fieldValue = AssemblyHashAlgorithm.Sha1;
                 }
 
                 if (!fieldValue.HasValue)
@@ -419,7 +415,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
                     data = GetNetModuleDecodedWellKnownAttributeData();
                     if (data != null)
                     {
-                        fieldValue = AssemblyHashAlgorithm.SHA1;
+                        fieldValue = AssemblyHashAlgorithm.Sha1;
                     }
                 }
 

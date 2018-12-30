@@ -2,7 +2,6 @@
 
 using CVM;
 using System;
-using System.Threading;
 
 namespace Microsoft.CodeAnalysis.FlowAnalysis
 {

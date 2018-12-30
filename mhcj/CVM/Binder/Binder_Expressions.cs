@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {

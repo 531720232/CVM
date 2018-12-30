@@ -2,8 +2,6 @@
 
 using System;
 using Microsoft.Cci;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 
 namespace Microsoft.CodeAnalysis
 {

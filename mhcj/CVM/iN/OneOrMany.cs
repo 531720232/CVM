@@ -3,7 +3,6 @@
 using System;
 using CVM.Collections.Immutable;
 using Microsoft.CodeAnalysis.PooledObjects;
-using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 
 namespace Roslyn.Utilities

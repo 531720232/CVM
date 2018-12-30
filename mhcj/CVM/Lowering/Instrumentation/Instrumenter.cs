@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics;
-using System;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {

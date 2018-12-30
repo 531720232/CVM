@@ -1,13 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Ts;
+﻿using Microsoft.CodeAnalysis.Ts;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.CodeAnalysis.CSharp.AstNode
 {
- internal   class TypeNode:Node
+    internal   class TypeNode:Node
     {
         internal DeclarationKind type;
 

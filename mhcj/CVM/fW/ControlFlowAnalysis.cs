@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
-using System.Threading;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {

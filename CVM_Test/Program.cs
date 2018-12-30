@@ -9,17 +9,21 @@ namespace CVM_Test
     {
         static void Main(string[] args)
         {
-             var text = System.IO.File.ReadAllText("f:/test/c1.cs");
-
-            CVM.GlobalDefine.Instance.InDebug();
+            var ad = typeof(Program).Assembly;
+            var test_cs = ad.GetManifestResourceNames()[0];
+            //
+          
+            var text =new System.IO.StreamReader(ad.GetManifestResourceStream(test_cs)).ReadToEnd();
+            
             var tree = Microsoft.CodeAnalysis.CSharp.SyntaxFactory.ParseSyntaxTree(text);
 
 
             var zone = Microsoft.CodeAnalysis.CSharp.CVM_Zone.Create("fyindex", tree);
        zone=     zone.AddSyntaxTrees(tree);
             zone.builder();
+          
             // zone.builder(tree);
-          //  cvm_.Visit(tree.GetRoot());
+            //  cvm_.Visit(tree.GetRoot());
         }
     }
 }

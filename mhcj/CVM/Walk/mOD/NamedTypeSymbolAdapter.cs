@@ -1,17 +1,14 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Cci;
 using Microsoft.CodeAnalysis.CSharp.Emit;
-using Microsoft.CodeAnalysis.CSharp.Symbols.Metadata.PE;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
-using Mono.Cecil;
 using CVM.Linq;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
@@ -60,17 +57,17 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
         }
 
-        TypeDefinition Cci.ITypeReference.TypeDef
+        System.Type Cci.ITypeReference.TypeDef
         {
             get
             {
-                //PENamedTypeSymbol peNamedType = this as PENamedTypeSymbol;
-                //if ((object)peNamedType != null)
-                //{
-                //    return peNamedType.Handle;
-                //}
+                AotNamedTypeSymbol peNamedType = this as AotNamedTypeSymbol;
+                if ((object)peNamedType != null)
+                {
+                    return peNamedType.Handle;
+                }
 
-                return default(TypeDefinition);
+                return default(System.Type);
             }
         }
 

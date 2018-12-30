@@ -3,7 +3,6 @@
 using System;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection;
 
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -1043,6 +1042,7 @@ namespace Microsoft.CodeAnalysis.CodeGen
             RealizedIL= writer.ToIL();
             RealizeSequencePoints();
 
+       
             this.RealizedExceptionHandlers = _scopeManager.GetExceptionHandlerRegions();
         }
 

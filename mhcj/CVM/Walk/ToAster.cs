@@ -1,18 +1,12 @@
 ﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using CVM.Linq;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Symbols;
-using CVM;
 using Microsoft.CodeAnalysis.CSharp.AstNode;
 using Microsoft.CodeAnalysis.Text;
 using System.Diagnostics;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
-   
+
     internal partial class ToAster : Microsoft.CodeAnalysis.CSharp.CSharpSyntaxVisitor<Node>
     {
 

@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Emit;
 using Microsoft.CodeAnalysis.Emit;
-using Mono.Cecil;
-using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {
@@ -49,7 +46,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         bool Cci.ITypeReference.IsEnum => false;
         bool Cci.ITypeReference.IsValueType => false;
 
-        TypeDefinition Cci.ITypeReference.TypeDef => default(TypeDefinition);
+        System.Type Cci.ITypeReference.TypeDef => default(System.Type);
         Cci.PrimitiveTypeCode Cci.ITypeReference.TypeCode => Cci.PrimitiveTypeCode.NotPrimitive;
 
         Cci.ITypeDefinition Cci.ITypeReference.GetResolvedType(EmitContext context) => null;

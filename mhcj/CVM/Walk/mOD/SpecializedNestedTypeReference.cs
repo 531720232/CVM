@@ -18,8 +18,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Emit
             : base(underlyingNamedType)
         {
         }
-    
-      Mono.Cecil.TypeDefinition Cci.ITypeReference.TypeDef { get; }
+
+        System.Type Cci.ITypeReference.TypeDef { get; }
 
         Cci.INestedTypeReference Cci.ISpecializedNestedTypeReference.GetUnspecializedVersion(EmitContext context)
         {

@@ -2,11 +2,7 @@
 using Microsoft.Cci;
 using Microsoft.CodeAnalysis.Debugging;
 using Microsoft.CodeAnalysis.Emit;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using static Microsoft.CodeAnalysis.CodeGen.SequencePointList;
 
 namespace Microsoft.CodeAnalysis.CodeGen

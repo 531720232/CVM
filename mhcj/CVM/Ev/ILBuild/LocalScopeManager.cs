@@ -8,9 +8,7 @@ using System.Linq;
 using CVM;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
-using Cci = Microsoft.Cci;
 using Microsoft.CodeAnalysis.Debugging;
-using Microsoft.CodeAnalysis.eX;
 namespace Microsoft.CodeAnalysis.CodeGen
 {
     internal partial class ILBuilder

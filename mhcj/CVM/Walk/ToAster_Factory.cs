@@ -2,15 +2,11 @@
 using Microsoft.CodeAnalysis.CSharp.AstNode;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using static CVM.AHelper;
 
 namespace Microsoft.CodeAnalysis.CSharp
 {
-  
+
 
     internal partial class ToAster 
     {

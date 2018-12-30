@@ -3,7 +3,6 @@
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Microsoft.CodeAnalysis
 {

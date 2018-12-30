@@ -46,4 +46,40 @@ namespace Microsoft.CodeAnalysis.CSharp
             return comparison;
         }
     }
+    internal class LexicalOrderSymbolComparer<T> : IComparer<T> where T:Symbol
+    {
+        public static readonly LexicalOrderSymbolComparer<T> Instance = new LexicalOrderSymbolComparer<T>();
+
+        private LexicalOrderSymbolComparer()
+        {
+        }
+
+        public int Compare(T x, T y)
+        {
+            int comparison;
+            if (x == y)
+            {
+                return 0;
+            }
+
+            var xSortKey = x.GetLexicalSortKey();
+            var ySortKey = y.GetLexicalSortKey();
+
+            comparison = LexicalSortKey.Compare(xSortKey, ySortKey);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = ((ISymbol)x).Kind.ToSortOrder() - ((ISymbol)y).Kind.ToSortOrder();
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = string.CompareOrdinal(x.Name, y.Name);
+            Debug.Assert(comparison != 0);
+            return comparison;
+        }
+    }
 }

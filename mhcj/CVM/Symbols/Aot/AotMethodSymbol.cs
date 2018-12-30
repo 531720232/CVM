@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using CVM.Collections.Immutable;
 using CVM.Linq;
 using Microsoft.Cci;
@@ -360,7 +358,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences => throw new NotImplementedException();
 
-        public override Accessibility DeclaredAccessibility =>Accessibility.NotApplicable;
+        public override Accessibility DeclaredAccessibility =>Accessibility.Public;
 
         public override bool IsStatic => me.IsStatic;
 

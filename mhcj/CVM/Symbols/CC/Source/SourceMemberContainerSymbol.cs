@@ -6,9 +6,7 @@ using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -1085,7 +1083,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
 
         public override ImmutableArray<NamedTypeSymbol> GetTypeMembers()
         {
-            return GetTypeMembersDictionary().Flatten((IComparer<NamedTypeSymbol>)LexicalOrderSymbolComparer.Instance);
+            return GetTypeMembersDictionary().Flatten((IComparer<NamedTypeSymbol>)LexicalOrderSymbolComparer<NamedTypeSymbol>.Instance);
         }
 
         public override ImmutableArray<NamedTypeSymbol> GetTypeMembers(string name)

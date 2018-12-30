@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-namespace Microsoft.Cci
+﻿namespace Microsoft.Cci
 {
     /// <summary>
     /// A enumeration of all of the value types that are built into the Runtime (and thus have specialized IL instructions that manipulate them).

@@ -5,7 +5,6 @@ using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Threading;
 using CVM;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols

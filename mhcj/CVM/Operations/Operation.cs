@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.CodeAnalysis.Operations;
-using Roslyn.Utilities;
 using Microsoft.CodeAnalysis.PooledObjects;
 using CVM.Linq;
 

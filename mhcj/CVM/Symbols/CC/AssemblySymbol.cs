@@ -6,7 +6,6 @@ using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis.Collections;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
@@ -668,7 +667,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
             }
             else
             {
-                AssemblyIdentity assemblyId = AssemblyIdentity.FromAssemblyDefinition(typeInfo.Assembly);
+                AssemblyIdentity assemblyId = AotAssemblySymbol.Inst.Identity;// AssemblyIdentity.FromAssemblyDefinition(typeInfo.Assembly);
 
                 MetadataTypeName mdName = MetadataTypeName.FromNamespaceAndTypeName(
                     typeInfo.Namespace ?? string.Empty,

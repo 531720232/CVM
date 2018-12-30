@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
 using CVM.Collections.Concurrent;
 using CVM.Collections.Immutable;
 using Microsoft.CodeAnalysis.PooledObjects;
@@ -468,7 +467,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         private void GetTypeNamespaceNamesOrThrow(Dictionary<string, ArrayBuilder<Type>> namespaces)
         {
             // PERF: Group by namespace handle so we only have to allocate one string for every namespace
-            var namespaceHandles = new Dictionary<string, ArrayBuilder<Type>>(0,NamespaceHandleEqualityComparer.Singleton);
+            var namespaceHandles = new Dictionary<string, ArrayBuilder<Type>>(NamespaceHandleEqualityComparer.Singleton);
             foreach (TypeDefToNamespace pair in GetTypeDefsOrThrow(topLevelOnly: true))
             {
                 var nsHandle = pair.NamespaceHandle;
@@ -648,8 +647,8 @@ namespace Microsoft.CodeAnalysis.CSharp.Symbols
         {
             foreach (var typeDef in CVM.GlobalDefine.Instance.clr_types)
             {
-              
-
+             
+             
                 if (topLevelOnly && typeDef.IsNested)
                 {
                     continue;

@@ -2,8 +2,6 @@
 
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
-using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using System;
 

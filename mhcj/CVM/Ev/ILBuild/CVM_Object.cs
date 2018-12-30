@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Microsoft.CodeAnalysis.CSharp
+﻿namespace Microsoft.CodeAnalysis.CSharp
 {
- internal   class CVM_Object
+    internal   class CVM_Object
     {
         internal object obj;
         internal Obj_Type type;

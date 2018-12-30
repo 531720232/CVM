@@ -5,7 +5,6 @@ using CVM.Collections.Immutable;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using EmitContext = Microsoft.CodeAnalysis.Emit.EmitContext;
-using Mono.Cecil;
 
 namespace Microsoft.Cci
 {
@@ -597,7 +596,7 @@ namespace Microsoft.Cci
         /// <summary>
         /// TypeDefs defined in modules linked to the assembly being emitted are listed in the ExportedTypes table.
         /// </summary>
-        TypeDefinition TypeDef { get; }
+       System.Type TypeDef { get; }
 
         IGenericMethodParameterReference AsGenericMethodParameterReference { get; }
         IGenericTypeInstanceReference AsGenericTypeInstanceReference { get; }

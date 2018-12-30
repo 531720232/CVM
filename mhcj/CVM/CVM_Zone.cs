@@ -1346,7 +1346,7 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         internal bool IsMemberMissing(SpecialMember member)
         {
-            throw new NotImplementedException();
+           return false;
         }
 
         private static void HandleCustomModifiers(int customModifiersCount, ArrayBuilder<bool> transformFlagsBuilder)
@@ -1928,58 +1928,32 @@ namespace Microsoft.CodeAnalysis.CSharp
         }
         private void Find_Type(Declaration type)
         {
-            //foreach (var b1 in type.Children)
-            //{
-            //    if (b1 is SingleTypeDeclaration a)
-            //    {
-            //        var type1 = a.Name;
-            //        var new1 = new CVM.TypeWalker();
-            //        var re = a.SyntaxReference.GetSyntax();
-            //        new1.Visit(a.SyntaxReference.GetSyntax());
-            //    //    Find_Type(type);
-            //    }
-            //    if (b1 is SingleNamespaceDeclaration b)
-            //    {
-            //        Find_Type(b);
-            //    }
-
-            //}
+           
 
         }
       
         public void builder()
         {
-          var sw = SourceAssembly;
-            var me = MetadataTypeName.FromFullName("System.String", false,0);
-            //   var gw=  sw.GetTopLevelTypeByMetadataName(ref me,SourceAssembly.Identity,true,false,out Tuple2<AssemblySymbol,AssemblySymbol> ww);
-
-      //      var t1 = GetSpecialType(SpecialType.System_Int32);
-      //var tg=      GetWellKnownType(WellKnownType.System_Collections_ObjectModel_Collection_T);
-
-        var a1sd=    SourceAssembly.CorLibrary.GetTypeByMetadataName(typeof(System.String).FullName);
-           // var t2 = t1.GetMembersUnordered();
-
-       //var arrs=    gw.GetMembers().ToArray();
-       //     var wr1 = arrs[0];
-       //     var wrt1 = wr1.GetAttributes();
-       //     var d = Declarations;
-           var c = CreateModuleBuilder(EmitOptions.Default, this.diag, default);
          
-     
-
-
+      
+            var a1sd=  SourceAssembly.CorLibrary.GetTypeByMetadataName(typeof(System.String).FullName);
+    
+               var moduleBeingBuilt = CreateModuleBuilder(EmitOptions.Default, this.diag, default);
             
-          var we= CompileMethods(c, diag, default, default);
+              var we= CompileMethods(moduleBeingBuilt, diag, default, default);
 
-            var md = SourceAssembly.GetTypeByMetadataName("a111.fyindex");
-            var ms =(IMethodSymbol) md.GetMembers("Abv")[0];
-            var mb = c.GetMethodBody(ms);
-            //var asw = new ToAster(this,tree);
-         //  asw.Start();
-     //       var tree1 = DeclarationTreeBuilder.ForTree(tree, "", true);
-     //       Find_Type(b);
+                var gc = new EmitContext(moduleBeingBuilt, null, diag, false, true);
+
+                var build = new Runtime.CVM_Build(gc);
+          
+                var md = SourceAssembly.GetTypeByMetadataName("a111.fyindex");
+                var ms =(IMethodSymbol) md.GetMembers("Abv")[0];
+
+                var s3 = build.GetType(typeof(System.Action));
+
+             var s1=   Runtime.Help_Symbol.Invoke(ms, build);
         }
-
+      
         internal  int CompareSourceLocations(Location loc1, Location loc2)
         {
             Debug.Assert(loc1.IsInSource);
@@ -2063,7 +2037,10 @@ namespace Microsoft.CodeAnalysis.CSharp
         Dictionary<SpecialMember, Symbol> sps;
         internal Symbol GetSpecialTypeMember(SpecialMember t)
         {
-            return sps[t];
+
+           
+                return Assembly.GetSpecialTypeMember(t);
+            
         }
 
         internal Symbol GetWellKnownTypeMember(WellKnownMember t)

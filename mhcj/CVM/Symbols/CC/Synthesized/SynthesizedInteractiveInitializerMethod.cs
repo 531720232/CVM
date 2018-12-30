@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
-using System;
 
 namespace Microsoft.CodeAnalysis.CSharp.Symbols
 {

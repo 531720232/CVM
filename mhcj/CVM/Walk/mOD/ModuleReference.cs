@@ -3,11 +3,10 @@
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Symbols;
 using Microsoft.CodeAnalysis.Emit;
 using Roslyn.Utilities;
-using Mono.Cecil;
+using System.Reflection;
 
 namespace Microsoft.CodeAnalysis.CSharp.Emit
 {

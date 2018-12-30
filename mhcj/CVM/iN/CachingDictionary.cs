@@ -5,7 +5,6 @@ using CVM.Collections.Concurrent;
 using System.Collections.Generic;
 using CVM.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
 using Microsoft.CodeAnalysis.PooledObjects;
 
 namespace Microsoft.CodeAnalysis.Collections

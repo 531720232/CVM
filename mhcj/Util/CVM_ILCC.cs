@@ -1,16 +1,13 @@
 ﻿using CVM.Collections.Immutable;
-using Microsoft.Cci;
 using Microsoft.CodeAnalysis.CodeGen;
 using Microsoft.CodeAnalysis.PooledObjects;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace CVM
 {
-  public  class CVM_ILCC
+    public  class CVM_ILCC
     {
         private const int PoolSize = 128;
         public const int LongSize = sizeof(long);

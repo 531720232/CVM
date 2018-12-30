@@ -2,8 +2,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Reflection;
-using EmitContext = Microsoft.CodeAnalysis.Emit.EmitContext;
 
 namespace Microsoft.CodeAnalysis.CodeGen
 {
