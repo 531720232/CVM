@@ -13,6 +13,7 @@ namespace CVM
         public List<object> ils2 = new List<object>();
 
         private static GlobalDefine g1;
+        public event System.Action<string> log;
         public static  GlobalDefine Instance
         {
 
@@ -28,8 +29,13 @@ namespace CVM
         public List<string> defines { get; private set; }
         public GlobalDefine()
         {
+         
             defines = new List<string>();
             AutoReg();
+        }
+        public void Log(string str)
+        {
+            log.Invoke(str);
         }
         Assembly[] loadedAssemblies;
         public Assembly[] GetAssemblies()

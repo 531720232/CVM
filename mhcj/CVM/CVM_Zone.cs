@@ -1952,6 +1952,7 @@ namespace Microsoft.CodeAnalysis.CSharp
                 var s3 = build.GetType(typeof(System.Action));
 
             var a4 = build.Invoke("a111.fyindex", "Abv",null,5317);
+            GlobalDefine.Instance.Log(AHelper.IsNullOrWhiteSpace(a4.ToString()) ? ("error"):(a4.ToString()));
             // var s1=   Runtime.Help_Symbol.Invoke(ms, build);
         }
       
