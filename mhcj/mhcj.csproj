@@ -430,6 +430,7 @@
     <Compile Include="CVM\Ev\Runtime\CVM_AppDomain.cs" />
     <Compile Include="CVM\Ev\Runtime\CVM_Build.cs" />
     <Compile Include="CVM\Ev\Runtime\ICVMType.cs" />
+    <Compile Include="CVM\Ev\Runtime\ILIntepreter.cs" />
     <Compile Include="CVM\Ev\Runtime\IMethod.cs" />
     <Compile Include="CVM\Ev\SourceReferenceResolver.cs" />
     <Compile Include="CVM\Ev\SyntaxAndDeclarationManager.cs" />

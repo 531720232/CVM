@@ -1951,7 +1951,8 @@ namespace Microsoft.CodeAnalysis.CSharp
 
                 var s3 = build.GetType(typeof(System.Action));
 
-             var s1=   Runtime.Help_Symbol.Invoke(ms, build);
+            var a4 = build.Invoke("a111.fyindex", "Abv",null,5317);
+            // var s1=   Runtime.Help_Symbol.Invoke(ms, build);
         }
       
         internal  int CompareSourceLocations(Location loc1, Location loc2)

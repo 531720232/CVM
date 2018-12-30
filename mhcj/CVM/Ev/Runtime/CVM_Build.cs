@@ -516,5 +516,95 @@ namespace Microsoft.CodeAnalysis.CSharp.Runtime
 
         private Dictionary<int, string> strsmap;
         private IReference[] _pseudoSymbolTokenToReferenceMap;
+
+
+        /// <summary>
+        /// Invokes a specific method
+        /// </summary>
+        /// <param name="m">Method</param>
+        /// <param name="instance">object instance</param>
+        /// <param name="p">Parameters</param>
+        /// <returns></returns>
+        public object Invoke(IMethodSymbol m, object instance, params object[] p)
+        {
+            object res = null;
+            if (m is SourceMethodSymbol s1)
+            {
+                ILIntepreter inteptreter = RequestILIntepreter();
+                try
+                {
+                    res = inteptreter.Run(m, instance, p);
+                }
+                finally
+                {
+                    FreeILIntepreter(inteptreter);
+                }
+            }
+
+            return res;
+        }
+        Queue<ILIntepreter> freeIntepreters = new Queue<ILIntepreter>();
+
+        internal void FreeILIntepreter(ILIntepreter inteptreter)
+        {
+            lock (freeIntepreters)
+            {
+            
+            }
+        }
+        ILIntepreter RequestILIntepreter()
+        {
+            ILIntepreter inteptreter = null;
+            lock (freeIntepreters)
+            {
+                if (freeIntepreters.Count > 0)
+                {
+                    inteptreter = freeIntepreters.Dequeue();
+                    //Clear debug state, because it may be in ShouldBreak State
+                 //  .. inteptreter.ClearDebugState();
+                }
+                else
+                {
+                    inteptreter = new ILIntepreter(this);
+
+                }
+            }
+
+            return inteptreter;
+        }
+        public object Invoke(string type, string method, object instance, params object[] p)
+        {
+
+
+            var t = GetType(type);
+            if(t==null)
+            {
+                return null;
+            }
+            var m = t.GetMethodsToEmit();// (method, p != null ? p.Length : 0);
+            var pl = p.Length;
+            foreach (var m1 in m)
+            {
+                if (m1.Name != method)
+                    continue;
+                if (m1.ParameterCount != pl)
+                    continue;
+
+                if (bodys.ContainsKey(m1))
+                {
+
+                   
+
+                   
+                   
+                    return Invoke(m1,instance,p);
+                }
+             
+
+            }
+            return null;
+
+
+        }
     }
 }
